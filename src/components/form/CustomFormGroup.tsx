@@ -19,7 +19,6 @@ const CustomFormGroup: React.FC<CustomFormGroupInterface> = ({
   value,
   sideLabel,
   required,
-  step,
 }) => {
   return (
     <FormGroup

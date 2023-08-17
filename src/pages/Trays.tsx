@@ -9,7 +9,6 @@ import { Tray } from '../data.types';
 import Modal from '../components/shared/Modal';
 import { convertDate, filterByName } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
-import { isArray } from 'lodash';
 
 const Trays = () => {
   const [trays, setTrays] = useState<Tray[]>([]);
