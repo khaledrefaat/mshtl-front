@@ -1,0 +1,57 @@
+.container {
+  width: 650px;
+  /* height: 220px; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  padding: 1rem 3rem;
+  border-radius: 8px;
+  position: relative;
+}
+
+.daily-sales__container {
+  height: auto;
+  padding: 2rem;
+}
+
+.container > form {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.container form button {
+  width: 550px;
+}
+
+.container input {
+  width: 550px;
+}
+
+.daily-sales__container input {
+  width: 420px;
+}
+
+.daily-sales__container label {
+  margin-left: auto;
+}
+
+.close-icon {
+  top: 10px;
+  right: 20px;
+  position: absolute;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  fill: #777;
+}
+
+.daily-sales__container .close-icon {
+  right: 12px;
+  top: 8px;
+}

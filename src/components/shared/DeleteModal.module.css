@@ -1,0 +1,51 @@
+.delete-modal {
+  background-color: #fff;
+  padding: 2rem;
+  position: relative;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.delete-button,
+.close-button {
+  border: none;
+  outline: none;
+  color: #fff;
+  border-radius: 4px;
+  padding: 3px 15px;
+  transition: background-color 0.3s ease;
+}
+
+.delete-button {
+  margin-left: 0.5rem;
+  background-color: #ea2027;
+}
+
+.delete-button:hover {
+  background-color: #ef5459;
+}
+
+.close-button {
+  margin-right: 0.5rem;
+  background-color: #00a8ff;
+}
+
+.close-button:hover {
+  background-color: #34b6f8;
+}
+
+.close-icon {
+  top: 8px;
+  right: 8px;
+  position: absolute;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  fill: #777;
+}

@@ -1,0 +1,21 @@
+.side-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.side-bar__items > div {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #27ae60;
+}
+
+.side-bar__items > div:hover {
+  background-color: #27ae60;
+  color: #fff !important;
+}
