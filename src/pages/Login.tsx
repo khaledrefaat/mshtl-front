@@ -13,6 +13,7 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(import.meta.env);
     try {
       const data = await sendRequest(
         `${import.meta.env.VITE_URI}/users/login`,
