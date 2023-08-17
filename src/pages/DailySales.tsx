@@ -50,9 +50,7 @@ const DailySales: React.FC<DailySalesInterface> = ({
   const fetchDailySales = async () => {
     try {
       clearError();
-      const res = await sendRequest(
-        import.meta.env.VITE_import.meta.env.VITE_URI + '/daily-sales'
-      );
+      const res = await sendRequest(`${import.meta.env.VITE_URI}/daily-sales`);
       setDailySales(res);
     } catch (err) {
       console.log(err);

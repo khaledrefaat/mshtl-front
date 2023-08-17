@@ -15,7 +15,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const data = await sendRequest(
-        import.meta.env.VITE_URI + '/users/login',
+        `${import.meta.env.VITE_URI}/users/login`,
         'POST',
         JSON.stringify({ password }),
         {
