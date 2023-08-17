@@ -39,10 +39,10 @@ const NewSupplierData: React.FC<NewSupplierDataInterface> = ({ hideModal }) => {
       try {
         clearError();
         const suppliers = await sendRequest(
-          import.meta.env.VITE_URI + '/supplier'
+          `${import.meta.env.VITE_URI}/supplier`
         );
         const fertilizers = await sendRequest(
-          import.meta.env.VITE_URI + '/fertilizer'
+          `${import.meta.env.VITE_URI}/fertilizer`
         );
         setSuppliers(suppliers);
         setFertilizers(fertilizers);

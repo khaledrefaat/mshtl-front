@@ -17,7 +17,7 @@ const Loan = () => {
 
   const fetchData = async () => {
     try {
-      const res = await sendRequest(import.meta.env.VITE_URI + '/loan');
+      const res = await sendRequest(`${import.meta.env.VITE_URI}/loan`);
       setData(res);
     } catch (err) {
       console.log(err);
@@ -31,7 +31,7 @@ const Loan = () => {
     try {
       clearError();
       const res = await sendRequest(
-        import.meta.env.VITE_URI + '/loan' + `/${data._id}`,
+        `${import.meta.env.VITE_URI}/loan` + `/${data._id}`,
         'DELETE'
       );
       if (res) fetchData();

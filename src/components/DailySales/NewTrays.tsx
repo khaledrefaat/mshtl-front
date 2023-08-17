@@ -28,7 +28,7 @@ const NewTrays: React.FC<NewTraysInterface> = ({ hideModal }) => {
     try {
       clearError();
       const res = await sendRequest(
-        import.meta.env.VITE_URI + '/tray',
+        `${import.meta.env.VITE_URI}/tray`,
         'POST',
         JSON.stringify({ customerId, income, notes }),
         {
@@ -48,7 +48,7 @@ const NewTrays: React.FC<NewTraysInterface> = ({ hideModal }) => {
       try {
         clearError();
         const customers = await sendRequest(
-          import.meta.env.VITE_URI + '/customer'
+          `${import.meta.env.VITE_URI}/customer`
         );
         setCustomers(customers);
       } catch (err) {

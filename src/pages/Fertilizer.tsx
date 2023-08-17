@@ -37,7 +37,7 @@ const FertilizerPage = () => {
     const fetchFertilizers = async () => {
       try {
         clearError();
-        const res = await sendRequest(import.meta.env.VITE_URI + '/fertilizer'); // Update endpoint
+        const res = await sendRequest(`${import.meta.env.VITE_URI}/fertilizer`); // Update endpoint
         setFertilizers(res);
       } catch (err) {
         console.log(err);

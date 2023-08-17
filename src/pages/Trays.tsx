@@ -29,7 +29,7 @@ const Trays = () => {
 
   const fetchTrays = async () => {
     try {
-      const res = await sendRequest(import.meta.env.VITE_URI + '/tray');
+      const res = await sendRequest(`${import.meta.env.VITE_URI}/tray`);
       setTrays(res.trays);
       setTraysCount(res.count);
     } catch (err) {

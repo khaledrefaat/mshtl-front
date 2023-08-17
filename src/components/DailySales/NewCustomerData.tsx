@@ -39,11 +39,11 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
       try {
         clearError();
         const customers = await sendRequest(
-          import.meta.env.VITE_URI + '/customer'
+          `${import.meta.env.VITE_URI}/customer`
         );
-        const items = await sendRequest(import.meta.env.VITE_URI + '/item');
+        const items = await sendRequest(`${import.meta.env.VITE_URI}/item`);
         const fertilizers = await sendRequest(
-          import.meta.env.VITE_URI + '/fertilizer'
+          `${import.meta.env.VITE_URI}/fertilizer`
         );
         setCustomers(customers);
         setItems(items);

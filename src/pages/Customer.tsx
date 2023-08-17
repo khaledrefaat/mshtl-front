@@ -37,7 +37,7 @@ const Customer = () => {
     const fetchCustomers = async () => {
       try {
         clearError();
-        const res = await sendRequest(import.meta.env.VITE_URI + '/customer');
+        const res = await sendRequest(`${import.meta.env.VITE_URI}/customer`);
         setCustomers(res);
       } catch (err) {
         console.log(err);

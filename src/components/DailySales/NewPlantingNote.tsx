@@ -33,7 +33,7 @@ const NewPlantingNote: React.FC<NewPlantingNoteInterface> = ({ hideModal }) => {
     const fetchItems = async () => {
       try {
         clearError();
-        const res = await sendRequest(import.meta.env.VITE_URI + '/item');
+        const res = await sendRequest(`${import.meta.env.VITE_URI}/item`);
         setItems(res);
       } catch (err) {
         console.log(err);
@@ -48,7 +48,7 @@ const NewPlantingNote: React.FC<NewPlantingNoteInterface> = ({ hideModal }) => {
     try {
       clearError();
       const res = await sendRequest(
-        import.meta.env.VITE_URI + `/seed`,
+        `${import.meta.env.VITE_URI}/seed`,
         'POST',
         JSON.stringify({
           itemId,

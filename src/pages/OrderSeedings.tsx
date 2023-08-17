@@ -33,7 +33,7 @@ const OrderSeedings = () => {
     const fetchItems = async () => {
       try {
         clearError;
-        const res = await sendRequest(import.meta.env.VITE_URI + '/item');
+        const res = await sendRequest(`${import.meta.env.VITE_URI}/item`);
         setItems(res);
       } catch (err) {
         console.log(err);
@@ -64,7 +64,7 @@ const OrderSeedings = () => {
 
   const fetchAndSelectItems = async () => {
     try {
-      const items = await sendRequest(import.meta.env.VITE_URI + '/item');
+      const items = await sendRequest(`${import.meta.env.VITE_URI}/item`);
       if (items) setItems(items);
       const findItem = items.find((newItem: Item) => newItem._id === item?._id);
       setItem(findItem);

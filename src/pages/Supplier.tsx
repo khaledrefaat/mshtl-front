@@ -35,7 +35,7 @@ const Supplier = () => {
     const fetchSuppliers = async () => {
       try {
         clearError();
-        const data = await sendRequest(import.meta.env.VITE_URI + '/supplier');
+        const data = await sendRequest(`${import.meta.env.VITE_URI}/supplier`);
         setSuppliers(data);
       } catch (err) {
         console.log(err);
@@ -64,7 +64,7 @@ const Supplier = () => {
         'DELETE'
       );
       if (newData) {
-        const data = await sendRequest(import.meta.env.VITE_URI + '/supplier');
+        const data = await sendRequest(`${import.meta.env.VITE_URI}/supplier`);
         setSuppliers(data);
         const findSupplier = data.find(
           (newSupplier: SupplierType) => newSupplier._id === supplier?._id

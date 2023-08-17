@@ -34,9 +34,9 @@ const NewOrderSeedingInterface: React.FC<NewOrderSeedingInterface> = ({
     const fetchItems = async () => {
       try {
         clearError();
-        const items = await sendRequest(import.meta.env.VITE_URI + '/item');
+        const items = await sendRequest(`${import.meta.env.VITE_URI}/item`);
         const customers = await sendRequest(
-          import.meta.env.VITE_URI + '/customer'
+          `${import.meta.env.VITE_URI}/customer`
         );
         setItems(items);
         setCustomers(customers);

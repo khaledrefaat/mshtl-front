@@ -29,7 +29,7 @@ const PlantingNoteBook = () => {
   const fetchData = async () => {
     clearError();
     try {
-      const res = await sendRequest(import.meta.env.VITE_URI + '/seed');
+      const res = await sendRequest(`${import.meta.env.VITE_URI}/seed`);
       setData(res);
     } catch (err) {
       console.log(err);

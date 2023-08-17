@@ -35,7 +35,7 @@ const Seed = () => {
     const fetchItems = async () => {
       try {
         clearError();
-        const res = await sendRequest(import.meta.env.VITE_URI + '/item');
+        const res = await sendRequest(`${import.meta.env.VITE_URI}/item`);
         setItems(res);
       } catch (err) {
         console.log(err);
