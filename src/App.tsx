@@ -65,7 +65,12 @@ export default function App() {
               <Route path="/item" element={<Item />} />
               <Route path="/trays" element={<Trays />} />
               <Route path="/planting-notebook" element={<PlantingNoteBook />} />
-              <Route path="/customers" element={<Customer />} />
+              <Route
+                path="/customers"
+                element={
+                  <Customer toggleNav={toggleNav} printMode={printMode} />
+                }
+              />
               <Route path="/suppliers" element={<Supplier />} />
               <Route path="/fixed-salary" element={<FixedSalary />} />
               <Route path="/employment" element={<Employment />} />

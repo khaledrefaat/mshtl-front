@@ -112,42 +112,44 @@ const DailySales: React.FC<DailySalesInterface> = ({
     <>
       {isLoading && <Modal spinner />}
       <Container>
-        <PageHeader noItemTitle title="يوميـــــــــــــات مبيعات" />
         {!printMode && (
-          <Navbar className="d-flex justify-content-center">
-            <NavBootstrap>
-              <NavBootstrap.Item
-                className="nav-link"
-                onClick={() => setShowNewCustomerModal(true)}
-              >
-                أضف عميل
-              </NavBootstrap.Item>
-              <NavBootstrap.Item
-                className="nav-link"
-                onClick={() => setShowNewSupplierModal(true)}
-              >
-                أضف مورد
-              </NavBootstrap.Item>
-              <NavBootstrap.Item
-                className="nav-link"
-                onClick={() => setShowNewItemModal(true)}
-              >
-                أضف صنف
-              </NavBootstrap.Item>
-              <NavBootstrap.Item
-                className="nav-link"
-                onClick={() => setShowNewFertilizerModal(true)}
-              >
-                أضف سماد او مبيد
-              </NavBootstrap.Item>
-              <NavBootstrap.Item
-                onClick={() => setShowNewDailySalesModal(true)}
-                className="nav-link"
-              >
-                أضف ألي يوميات المبيعــــــــــات
-              </NavBootstrap.Item>
-            </NavBootstrap>
-          </Navbar>
+          <>
+            <PageHeader noItemTitle title="يوميـــــــــــــات مبيعات" />
+            <Navbar className="d-flex justify-content-center">
+              <NavBootstrap>
+                <NavBootstrap.Item
+                  className="nav-link"
+                  onClick={() => setShowNewCustomerModal(true)}
+                >
+                  أضف عميل
+                </NavBootstrap.Item>
+                <NavBootstrap.Item
+                  className="nav-link"
+                  onClick={() => setShowNewSupplierModal(true)}
+                >
+                  أضف مورد
+                </NavBootstrap.Item>
+                <NavBootstrap.Item
+                  className="nav-link"
+                  onClick={() => setShowNewItemModal(true)}
+                >
+                  أضف صنف
+                </NavBootstrap.Item>
+                <NavBootstrap.Item
+                  className="nav-link"
+                  onClick={() => setShowNewFertilizerModal(true)}
+                >
+                  أضف سماد او مبيد
+                </NavBootstrap.Item>
+                <NavBootstrap.Item
+                  onClick={() => setShowNewDailySalesModal(true)}
+                  className="nav-link"
+                >
+                  أضف ألي يوميات المبيعــــــــــات
+                </NavBootstrap.Item>
+              </NavBootstrap>
+            </Navbar>
+          </>
         )}
         {!printMode && (
           <div className="input-group d-flex justify-content-end">

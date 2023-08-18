@@ -15,7 +15,13 @@ import TableData from '../components/table/TableData';
 import Modal from '../components/shared/Modal';
 import { convertDate, filterByName } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
-const Customer = () => {
+
+interface CustomerInterface {
+  toggleNav: () => void;
+  printMode: boolean;
+}
+
+const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const [customers, setCustomers] = useState<CustomerType[]>([]);
   const [customer, setCustomer] = useState<CustomerType>();
@@ -94,6 +100,18 @@ const Customer = () => {
     return () => clearTimeout(timer);
   }, [searchTerm, customers]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      document.addEventListener('keydown', e => {
+        if (e.key === 'p') {
+          toggleNav();
+        }
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <>
       {isLoading && <Modal spinner />}
@@ -108,35 +126,39 @@ const Customer = () => {
           fourthTitle="رقم الموبايل"
           fourthValue={customer?.phone}
         />
-        <div className="input-group d-flex justify-content-start">
-          <div className="form-outline">
-            <input
-              type="search"
-              className="form-control"
-              placeholder="Search"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
+        {!printMode && (
+          <div className="input-group d-flex justify-content-start">
+            <div className="form-outline">
+              <input
+                type="search"
+                className="form-control"
+                placeholder="Search"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
-        </div>
+        )}
         {error ? (
           <Error>{error}</Error>
         ) : (
           <Row>
-            <Col sm={2}>
-              <SideBar title="العملاء">
-                {searchResult &&
-                  searchResult.map(customer => (
-                    <SideBarItem
-                      key={customer._id}
-                      id={customer._id}
-                      onClick={onCustomerClick}
-                    >
-                      {customer.name}
-                    </SideBarItem>
-                  ))}
-              </SideBar>
-            </Col>
+            {!printMode && (
+              <Col sm={2}>
+                <SideBar title="العملاء">
+                  {searchResult &&
+                    searchResult.map(customer => (
+                      <SideBarItem
+                        key={customer._id}
+                        id={customer._id}
+                        onClick={onCustomerClick}
+                      >
+                        {customer.name}
+                      </SideBarItem>
+                    ))}
+                </SideBar>
+              </Col>
+            )}
             <Col>
               <Table headers={headers}>
                 {customer &&
