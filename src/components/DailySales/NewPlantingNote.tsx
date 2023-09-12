@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import CustomFormGroup from '../form/CustomFormGroup';
 import { Item } from '../../data.types';
 import useHttpClient from '../hooks/http-hook';
-import { FormSelect } from 'react-bootstrap';
 import Modal from '../shared/Modal';
 import CustomButton from '../shared/CustomButton';
 import Error from '../shared/Error';
