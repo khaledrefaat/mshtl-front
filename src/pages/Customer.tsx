@@ -29,7 +29,6 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
   const [searchResult, setSearchResult] = useState<CustomerType[]>([]);
 
   const headers = [
-    '',
     'التاريخ',
     'سعر الوحدة',
     'البيــــــــــــــــان',
@@ -38,6 +37,8 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
     'الإجمالي',
     'الرصيد',
   ];
+
+  const headersWithTrashIcon = ['', ...headers];
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -160,14 +161,18 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
               </Col>
             )}
             <Col>
-              <Table headers={headers}>
+              <Table headers={printMode ? headers : headersWithTrashIcon}>
                 {customer &&
                   customer.data.map(customerData => (
                     <React.Fragment key={customerData._id}>
                       <tr>
-                        <TrashIcon
-                          onClick={() => handelDeleteCustomerData(customerData)}
-                        />
+                        {!printMode && (
+                          <TrashIcon
+                            onClick={() =>
+                              handelDeleteCustomerData(customerData)
+                            }
+                          />
+                        )}
                         <TableData>
                           {customerData.date && convertDate(customerData.date)}
                         </TableData>

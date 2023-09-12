@@ -224,8 +224,9 @@ const DailySales: React.FC<DailySalesInterface> = ({
                 <div className="side-date--year" key={year}>
                   <h3>{year}</h3>
                   <ul>
-                    {Object.keys(dailySales.organizedDailySales[year]).map(
-                      month => (
+                    {Object.keys(dailySales.organizedDailySales[year])
+                      .reverse()
+                      .map(month => (
                         <li
                           key={month}
                           onClick={() => {
@@ -238,8 +239,7 @@ const DailySales: React.FC<DailySalesInterface> = ({
                         >
                           {monthList[month]}
                         </li>
-                      )
-                    )}
+                      ))}
                   </ul>
                 </div>
               ))}

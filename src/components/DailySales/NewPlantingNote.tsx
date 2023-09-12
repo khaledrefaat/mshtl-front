@@ -6,6 +6,7 @@ import { FormSelect } from 'react-bootstrap';
 import Modal from '../shared/Modal';
 import CustomButton from '../shared/CustomButton';
 import Error from '../shared/Error';
+import CustomSelect from '../form/CustomSelect';
 
 interface NewPlantingNoteInterface {
   hideModal: () => void;
@@ -77,17 +78,12 @@ const NewPlantingNote: React.FC<NewPlantingNoteInterface> = ({ hideModal }) => {
   return (
     <>
       {isLoading && <Modal spinner />}
-      <FormSelect className="mb-4" onChange={e => onItemSelect(e.target.value)}>
-        <option value="" onSelect={() => onItemSelect('')}>
-          اختر الصنف
-        </option>
-        {items &&
-          items.map(({ _id, name }) => (
-            <option key={_id} value={_id}>
-              {name}
-            </option>
-          ))}
-      </FormSelect>
+      <CustomSelect
+        title="أختر الصنف"
+        list={items}
+        onValueChange={onItemSelect}
+      />
+
       {itemId && (
         <>
           <CustomFormGroup
