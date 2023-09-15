@@ -5,7 +5,6 @@ import useHttpClient from '../hooks/http-hook';
 import Modal from '../shared/Modal';
 import Error from '../shared/Error';
 import { Customer } from '../../data.types';
-import { FormSelect } from 'react-bootstrap';
 import CustomSelect from '../form/CustomSelect';
 
 interface NewTraysInterface {
