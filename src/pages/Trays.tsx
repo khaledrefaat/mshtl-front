@@ -76,7 +76,7 @@ const Trays = () => {
       }
     }
     try {
-      const timer = setTimeout(() => {
+      setTimeout(() => {
         fetchTrays();
       }, 200);
     } catch (err) {
