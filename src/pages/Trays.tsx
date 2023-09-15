@@ -52,32 +52,35 @@ const Trays = () => {
   }, [searchTerm, trays]);
 
   const handelDelete = async (tray: Tray) => {
-    console.log(tray.customerId);
-    console.log(tray.income);
     if (tray.customerId && tray.transactionId) {
       try {
         clearError();
-        const newData = await sendRequest(
-          `${import.meta.env.VITE_URI}/customer/${tray.customerId}/${
+        await sendRequest(
+          `${import.meta.env.VITE_URI}/customer/item/${tray.customerId}/${
             tray.transactionId
           }`,
           'DELETE'
         );
-        if (newData) fetchTrays();
       } catch (err) {
         console.log(err);
       }
     } else if (tray.customerId && tray.income) {
       try {
         clearError();
-        const res = await sendRequest(
+        await sendRequest(
           `${import.meta.env.VITE_URI}/tray/${tray._id}`,
           'DELETE'
         );
-        if (res) fetchTrays();
       } catch (err) {
         console.log(err);
       }
+    }
+    try {
+      const timer = setTimeout(() => {
+        fetchTrays();
+      }, 200);
+    } catch (err) {
+      console.log(err);
     }
   };
 

@@ -6,6 +6,7 @@ import Modal from '../shared/Modal';
 import Error from '../shared/Error';
 import { Customer } from '../../data.types';
 import { FormSelect } from 'react-bootstrap';
+import CustomSelect from '../form/CustomSelect';
 
 interface NewTraysInterface {
   hideModal: () => void;
@@ -66,20 +67,11 @@ const NewTrays: React.FC<NewTraysInterface> = ({ hideModal }) => {
   return (
     <>
       {isLoading && <Modal spinner />}
-      <FormSelect
-        className="mb-4"
-        onChange={e => onCustomerSelect(e.target.value)}
-      >
-        <option value="" onSelect={() => onCustomerSelect('')}>
-          اختر العميل
-        </option>
-        {customers &&
-          customers.map(({ _id, name }) => (
-            <option key={_id} value={_id}>
-              {name}
-            </option>
-          ))}
-      </FormSelect>
+      <CustomSelect
+        title="اختر العميل"
+        list={customers}
+        onValueChange={onCustomerSelect}
+      />
       {customerId && (
         <>
           <CustomFormGroup
