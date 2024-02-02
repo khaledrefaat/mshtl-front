@@ -1,4 +1,4 @@
-import TableData from '..//table/TableData';
+import TableData from '../table/TableData';
 import { ReactComponent as TrashSvg } from '../Icons/trash.svg';
 
 interface TrashIcon {
@@ -8,7 +8,7 @@ interface TrashIcon {
 const TrashIcon: React.FC<TrashIcon> = ({ onClick }) => {
   return (
     <TableData>
-      <TrashSvg className="trash-icon" onClick={onClick} />
+      <TrashSvg className="action-icon trash-icon" onClick={onClick} />
     </TableData>
   );
 };

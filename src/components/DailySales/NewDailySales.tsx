@@ -11,6 +11,7 @@ import Modal from '../shared/Modal';
 import classes from './styles.module.css';
 import NewNoteData from './NewNoteData';
 import NewLoanData from './NewLoanData';
+import OldDataRequest from './OldDataRequest';
 
 interface NewDailySalesInterface {
   hideModal: () => void;
@@ -29,8 +30,8 @@ const NewDailySales: React.FC<NewDailySalesInterface> = ({
 
   // the only job of this onSubmit function is to call the fetchDataFunction instead of passing it to each component
   const onSubmit = () => {
-    fetchData();
     hideModal();
+    setTimeout(fetchData, 500);
   };
 
   const returnComponent = (value: string) => {
@@ -106,6 +107,16 @@ const NewDailySales: React.FC<NewDailySalesInterface> = ({
           url={`${import.meta.env.VITE_URI}/loan`}
         />
       );
+    else if (value === 'item')
+      return (
+        <NewNoteData
+          hideModal={onSubmit}
+          url={`${import.meta.env.VITE_URI}/item`}
+        />
+      );
+    else if (value == 'item - fertilizer') {
+      return <OldDataRequest hideModal={onSubmit} />;
+    }
   };
 
   return (
@@ -137,6 +148,7 @@ const NewDailySales: React.FC<NewDailySalesInterface> = ({
             <option value="requirements">مستلزمات مشتل</option>
             <option value="water">مياه</option>
             <option value="loan">سلفة</option>
+            <option value="item - fertilizer">صنف و مبيد</option>
           </FormSelect>
           {selectValue && returnComponent(selectValue)}
         </CustomForm>

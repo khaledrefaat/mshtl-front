@@ -131,6 +131,11 @@ export const returnUrl = (
       url: `${import.meta.env.VITE_URI}/customer/${_id}/${transactionId}`,
     },
     {
+      name: 'Fertilizer',
+      subName: 'Data',
+      url: `${import.meta.env.VITE_URI}/fertilizer/${_id}/${transactionId}`,
+    },
+    {
       name: 'Seeding',
       url: `${import.meta.env.VITE_URI}/seed/${_id}`,
     },
@@ -138,6 +143,11 @@ export const returnUrl = (
       name: 'Item',
       subName: 'Order',
       url: `${import.meta.env.VITE_URI}/item/order/${_id}/${transactionId}`,
+    },
+    {
+      name: 'Item',
+      subName: 'Data',
+      url: `${import.meta.env.VITE_URI}/item/${_id}/${transactionId}`,
     },
     {
       name: 'Supplier',
@@ -183,6 +193,10 @@ export const returnUrl = (
     {
       name: 'Forks',
       url: `${import.meta.env.VITE_URI}/forks/${_id}`,
+    },
+    {
+      name: 'Loan',
+      url: `${import.meta.env.VITE_URI}/loan/${_id}`,
     },
   ];
 

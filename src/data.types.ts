@@ -24,6 +24,7 @@ export interface fertilizerData {
   customerId?: string;
   supplierId?: string;
   supplierTransactionId?: string;
+  dailySaleId?: string;
 }
 
 export interface Fertilizer {
@@ -55,6 +56,7 @@ export interface DailySale {
     transactionId?: string;
     subName?: string;
   };
+  isConfirmed?: boolean;
 }
 
 export interface customerData {
@@ -153,6 +155,7 @@ export interface itemData {
   customerTransactionId?: string;
   customerId?: string;
   seedingId?: string;
+  dailySaleId?: string;
 }
 
 export interface itemOrder {

@@ -96,6 +96,13 @@ const Seed = () => {
       } catch (err) {
         console.log(err);
       }
+    } else if (data.dailySaleId) {
+      clearError();
+      const newData = await sendRequest(
+        `${import.meta.env.VITE_URI}/item/${item?._id}/${data._id}`,
+        'DELETE'
+      );
+      if (newData) fetchAndSelectItem();
     }
   };
 
@@ -144,19 +151,17 @@ const Seed = () => {
               <Table headers={headers}>
                 {item &&
                   item.data.map(item => (
-                    <>
-                      <tr key={item._id}>
-                        <TrashIcon onClick={() => handelDeleteItemData(item)} />
-                        <TableData>{item.notes}</TableData>
-                        <TableData>
-                          {item.date && convertDate(item.date)}
-                        </TableData>
-                        <TableData>{item.statement}</TableData>
-                        <TableData>{item.expense}</TableData>
-                        <TableData>{item.income}</TableData>
-                        <TableData>{item.balance}</TableData>
-                      </tr>
-                    </>
+                    <tr key={item._id}>
+                      <TrashIcon onClick={() => handelDeleteItemData(item)} />
+                      <TableData>{item.notes}</TableData>
+                      <TableData>
+                        {item.date && convertDate(item.date)}
+                      </TableData>
+                      <TableData>{item.statement}</TableData>
+                      <TableData>{item.expense}</TableData>
+                      <TableData>{item.income}</TableData>
+                      <TableData>{item.balance}</TableData>
+                    </tr>
                   ))}
                 {modal && (
                   <NewRequest

@@ -75,7 +75,7 @@ const DailySales: React.FC<DailySalesInterface> = ({
     try {
       clearError();
       const newData = await sendRequest(url, 'DELETE');
-      if (newData) fetchDailySales();
+      if (newData) setTimeout(fetchDailySales, 500);
     } catch (err) {
       console.log(err);
     }
@@ -90,6 +90,7 @@ const DailySales: React.FC<DailySalesInterface> = ({
       noteBook.transactionId
     );
     try {
+      console.log(url);
       if (url) await sendDeleteRequest(url);
     } catch (err) {
       console.log(err);
@@ -197,7 +198,11 @@ const DailySales: React.FC<DailySalesInterface> = ({
             {searchResult &&
               searchResult.map(dailySale => (
                 <tr key={dailySale._id}>
-                  {!printMode && (
+                  {!printMode && dailySale.isConfirmed ? (
+                    <TableData></TableData>
+                  ) : printMode ? (
+                    ''
+                  ) : (
                     <TrashIcon onClick={() => handelDeleteRequest(dailySale)} />
                   )}
                   <TableData>{dailySale.notes}</TableData>
@@ -220,29 +225,31 @@ const DailySales: React.FC<DailySalesInterface> = ({
         <div className="side-date--bar">
           <div className="years">
             {dailySales?.organizedDailySales &&
-              Object.keys(dailySales?.organizedDailySales).map(year => (
-                <div className="side-date--year" key={year}>
-                  <h3>{year}</h3>
-                  <ul>
-                    {Object.keys(dailySales.organizedDailySales[year])
-                      .reverse()
-                      .map(month => (
-                        <li
-                          key={month}
-                          onClick={() => {
-                            setSearchResult(
-                              dailySales.organizedDailySales[year][
-                                month
-                              ].reverse()
-                            );
-                          }}
-                        >
-                          {monthList[month]}
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ))}
+              Object.keys(dailySales?.organizedDailySales)
+                .reverse()
+                .map(year => (
+                  <div className="side-date--year" key={year}>
+                    <h3 className="mt-3 fw-bold">{year}</h3>
+                    <ul>
+                      {Object.keys(dailySales.organizedDailySales[year])
+                        .reverse()
+                        .map(month => (
+                          <li
+                            key={month}
+                            onClick={() => {
+                              setSearchResult(
+                                dailySales.organizedDailySales[year][
+                                  month
+                                ].reverse()
+                              );
+                            }}
+                          >
+                            {monthList[month]}
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                ))}
           </div>
           <h4
             onClick={() => {

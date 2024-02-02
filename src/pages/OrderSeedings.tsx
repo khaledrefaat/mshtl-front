@@ -11,7 +11,10 @@ import { Col, Row } from 'react-bootstrap';
 import SideBar from '../components/shared/SideBar';
 import SideBarItem from '../components/shared/SideBarItem';
 import { convertDate, filterByName } from '../util/util';
-import TrashIcon from '../components/shared/TrashIcon';
+
+import { ReactComponent as TrashSvg } from '../components/Icons/trash.svg';
+import { ReactComponent as DoneSvg } from '../components/Icons/check-cricle.svg';
+
 const OrderSeedings = () => {
   const [items, setItems] = useState<Item[]>([]);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
@@ -80,7 +83,21 @@ const OrderSeedings = () => {
         'DELETE'
       );
       if (res) fetchAndSelectItems();
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handelConfirmOrder = async (order: itemOrder) => {
+    try {
+      const res = await sendRequest(
+        `${import.meta.env.VITE_URI}/item/order/${item?._id}/${order._id}`,
+        'PUT'
+      );
+      if (res) fetchAndSelectItems();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const calcTotalOrders = () => {
@@ -133,7 +150,16 @@ const OrderSeedings = () => {
                 {item?.orders.map(order => {
                   return (
                     <tr key={order._id}>
-                      <TrashIcon onClick={() => handelDeleteItemData(order)} />
+                      <TableData>
+                        <TrashSvg
+                          className="action-icon trash-icon"
+                          onClick={() => handelDeleteItemData(order)}
+                        />
+                        <DoneSvg
+                          className="action-icon done-icon"
+                          onClick={() => handelConfirmOrder(order)}
+                        />
+                      </TableData>
                       <TableData>{order.notes}</TableData>
                       <TableData>
                         {order.landDate && convertDate(order.landDate)}

@@ -51,7 +51,6 @@ const FertilizerPage = () => {
       const selectedFertilizer = fertilizers.find(
         fertilizer => fertilizer._id === fertilizerId
       );
-      console.log(selectedFertilizer);
       setSelectedFertilizer(selectedFertilizer);
     } catch (err) {
       console.log(err);
@@ -82,10 +81,10 @@ const FertilizerPage = () => {
   };
 
   const handleDeleteFertilizerData = async (data: fertilizerData) => {
+    let newData;
     if (data.supplierId) {
       try {
         clearError();
-        let newData;
         if (data.supplierId) {
           newData = await sendRequest(
             `${import.meta.env.VITE_URI}/supplier/${data.supplierId}/${
@@ -101,11 +100,18 @@ const FertilizerPage = () => {
             'DELETE'
           );
         }
-        if (newData) fetchAndSelectFertilizer();
       } catch (err) {
         console.log(err);
       }
+    } else if (data.dailySaleId) {
+      newData = await sendRequest(
+        `${import.meta.env.VITE_URI}/fertilizer/${selectedFertilizer?._id}/${
+          data._id
+        }`,
+        'DELETE'
+      );
     }
+    if (newData) fetchAndSelectFertilizer();
   };
 
   return (

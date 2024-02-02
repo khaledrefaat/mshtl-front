@@ -60,7 +60,6 @@ const NewSupplierData: React.FC<NewSupplierDataInterface> = ({ hideModal }) => {
     setFertilizerId(selectedFertilizer._id);
 
   const onFormSubmit = async () => {
-    console.log(supplierId);
     try {
       clearError();
       let res;

@@ -8,6 +8,7 @@ import Modal from '../components/shared/Modal';
 
 export default function Login() {
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('admin');
   const { login, token } = useContext(AuthContext);
   const { sendRequest, isLoading, error, clearError } = useHttpClient();
 
@@ -17,14 +18,13 @@ export default function Login() {
       const data = await sendRequest(
         `${import.meta.env.VITE_URI}/users/login`,
         'POST',
-        JSON.stringify({ password }),
+        JSON.stringify({ password, username }),
         {
           'Content-Type': 'application/json',
         }
       );
 
       if (data) {
-        console.log(data);
         login(data.admin, data.token);
       } else {
         setTimeout(() => {
@@ -41,7 +41,11 @@ export default function Login() {
         <h2>login</h2>
         <label>
           <span>username:</span>
-          <input type="text" value={'Admin'} />
+          <input
+            type="text"
+            onChange={e => setUsername(e.target.value)}
+            value={username}
+          />
         </label>
         <label>
           <span>password:</span>
