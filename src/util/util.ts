@@ -191,7 +191,7 @@ export const returnUrl = (
     },
     {
       name: 'Loan',
-      url: `${import.meta.env.VITE_URI}/loan/${_id}`,
+      url: `${import.meta.env.VITE_URI}/loan/${_id}/${transactionId}`,
     },
   ];
 
