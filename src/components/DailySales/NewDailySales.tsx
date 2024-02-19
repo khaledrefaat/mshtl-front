@@ -10,8 +10,8 @@ import Modal from '../shared/Modal';
 
 import classes from './styles.module.css';
 import NewNoteData from './NewNoteData';
-import NewLoanData from './NewLoanData';
 import OldDataRequest from './OldDataRequest';
+import NewLoan from './NewLoan';
 
 interface NewDailySalesInterface {
   hideModal: () => void;
@@ -44,6 +44,7 @@ const NewDailySales: React.FC<NewDailySalesInterface> = ({
       return <NewCustomerData hideModal={onSubmit} />;
     else if (value === 'orderSeeding')
       return <NewOrderSeeding hideModal={onSubmit} />;
+    else if (value === 'loan') return <NewLoan hideModal={onSubmit} />;
     else if (value === 'electricity')
       return (
         <NewNoteData
@@ -100,13 +101,6 @@ const NewDailySales: React.FC<NewDailySalesInterface> = ({
           url={`${import.meta.env.VITE_URI}/water`}
         />
       );
-    else if (value === 'loan')
-      return (
-        <NewLoanData
-          hideModal={onSubmit}
-          url={`${import.meta.env.VITE_URI}/loan`}
-        />
-      );
     else if (value === 'item')
       return (
         <NewNoteData
@@ -142,7 +136,6 @@ const NewDailySales: React.FC<NewDailySalesInterface> = ({
             <option value="electricity">كهرباء</option>
             <option value="employment">عمالة</option>
             <option value="fixed-salary">أجور ثابتة</option>
-            <option value="forks">شركات</option>
             <option value="gas">بنزين</option>
             <option value="hospitality">ضيافة</option>
             <option value="requirements">مستلزمات مشتل</option>

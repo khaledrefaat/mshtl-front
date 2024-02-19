@@ -1,4 +1,4 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -19,7 +19,6 @@ import Water from './pages/Water';
 import Electricity from './pages/Electricity';
 import Gas from './pages/Gas';
 import Requirements from './pages/Requirements';
-import Forks from './pages/Forks';
 import useAuth from './components/hooks/auth-hook';
 import { AuthContext } from './components/context/AuthContext';
 import { useEffect, useState } from 'react';
@@ -78,7 +77,6 @@ export default function App() {
               <Route path="/electricity" element={<Electricity />} />
               <Route path="/gas" element={<Gas />} />
               <Route path="/requirements" element={<Requirements />} />
-              <Route path="/forks" element={<Forks />} />
               <Route path="/loan" element={<Loan />} />
               <Route path="/fertilizer" element={<Fertilizer />} />
               <Route path="/water" element={<Water />} />

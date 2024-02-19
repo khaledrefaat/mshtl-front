@@ -91,11 +91,6 @@ export const navList = [
     id: 30,
   },
   {
-    to: '/forks',
-    body: 'شركات',
-    id: 14,
-  },
-  {
     to: '/fertilizer',
     body: 'اسمدة',
     id: 4,

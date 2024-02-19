@@ -36,6 +36,7 @@ const DailySales: React.FC<DailySalesInterface> = ({
 }) => {
   const [showNewCustomerModal, setShowNewCustomerModal] = useState(false);
   const [showNewSupplierModal, setShowNewSupplierModal] = useState(false);
+  const [showLoanerModal, setShowLoanerModal] = useState(false);
   const [showNewItemModal, setShowNewItemModal] = useState(false);
   const [showNewFertilizerModal, setShowNewFertilizerModal] = useState(false);
   const [showNewDailySalesModal, setShowNewDailySalesModal] = useState(false);
@@ -118,6 +119,12 @@ const DailySales: React.FC<DailySalesInterface> = ({
             <PageHeader noItemTitle title="يوميـــــــــــــات مبيعات" />
             <Navbar className="d-flex justify-content-center">
               <NavBootstrap>
+                <NavBootstrap.Item
+                  className="nav-link"
+                  onClick={() => setShowLoanerModal(true)}
+                >
+                  أضف مستلف
+                </NavBootstrap.Item>
                 <NavBootstrap.Item
                   className="nav-link"
                   onClick={() => setShowNewCustomerModal(true)}
@@ -276,6 +283,14 @@ const DailySales: React.FC<DailySalesInterface> = ({
           errorMsg="عذرا  يجب ان يكون اسم المورد اكثر من 2 حرف"
           hideModal={() => setShowNewSupplierModal(false)}
           url={`${import.meta.env.VITE_URI}/supplier`}
+        />
+      )}
+      {showLoanerModal && (
+        <NewRequest
+          title="أســــــــــــــــــــــــــــم المــــــــــــــــــــستلف"
+          errorMsg="عذرا  يجب ان يكون اسم المستلف اكثر من 2 حرف"
+          hideModal={() => setShowLoanerModal(false)}
+          url={`${import.meta.env.VITE_URI}/loan`}
         />
       )}
       {showNewItemModal && (

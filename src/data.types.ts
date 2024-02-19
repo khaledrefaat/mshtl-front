@@ -115,6 +115,13 @@ export interface Loan {
   date: string;
 }
 
+export interface Loaner {
+  name: string;
+  balance: number;
+  _id: string;
+  data: Loan[];
+}
+
 export interface Supplier {
   _id: string;
   name: string;

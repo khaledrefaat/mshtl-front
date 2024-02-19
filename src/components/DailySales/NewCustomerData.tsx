@@ -25,12 +25,14 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
   const { isLoading, error, clearError, sendRequest } = useHttpClient();
 
   const [paid, setPaid] = useState('');
+  const [discount, setDiscount] = useState('');
   const [trays, setTrays] = useState('');
   const [statement, setStatement] = useState('');
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [switchButton, setSwitchButton] = useState('');
 
   const onPaidChange = (paid: string) => setPaid(paid);
+  const onDiscountChange = (discount: string) => setDiscount(discount);
   const onTraysChange = (trays: string) => setTrays(trays);
   const onStatementChange = (statement: string) => setStatement(statement);
 
@@ -119,6 +121,7 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
           JSON.stringify({
             paid,
             statement,
+            discount,
           }),
           {
             'Content-Type': 'application/json',
@@ -132,9 +135,10 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
   };
 
   useEffect(() => {
-    if ((trays && item) || paid) setButtonDisabled(false);
+    if ((trays && item) || (!paid && discount) || (paid && !discount))
+      setButtonDisabled(false);
     else setButtonDisabled(true);
-  }, [trays, paid]);
+  }, [trays, paid, discount, item]);
 
   return (
     <>
@@ -247,6 +251,13 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
                 type="number"
                 onChange={onPaidChange}
                 value={paid}
+                sideLabel
+              />
+              <CustomFormGroup
+                label=": خصم"
+                type="number"
+                onChange={onDiscountChange}
+                value={discount}
                 sideLabel
               />
               <CustomFormGroup

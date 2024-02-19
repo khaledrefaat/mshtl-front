@@ -8,7 +8,6 @@ import Modal from '../components/shared/Modal';
 
 export default function Login() {
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('admin');
   const { login, token } = useContext(AuthContext);
   const { sendRequest, isLoading, error, clearError } = useHttpClient();
 
@@ -18,7 +17,7 @@ export default function Login() {
       const data = await sendRequest(
         `${import.meta.env.VITE_URI}/users/login`,
         'POST',
-        JSON.stringify({ password, username }),
+        JSON.stringify({ password }),
         {
           'Content-Type': 'application/json',
         }
@@ -41,11 +40,7 @@ export default function Login() {
         <h2>login</h2>
         <label>
           <span>username:</span>
-          <input
-            type="text"
-            onChange={e => setUsername(e.target.value)}
-            value={username}
-          />
+          <input type="text" value="admin" readOnly />
         </label>
         <label>
           <span>password:</span>
