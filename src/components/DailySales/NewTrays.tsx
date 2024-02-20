@@ -15,6 +15,7 @@ const NewTrays: React.FC<NewTraysInterface> = ({ hideModal }) => {
   const { isLoading, error, clearError, sendRequest } = useHttpClient();
 
   const [income, setIncome] = useState('');
+  const [insurance, setInsurance] = useState('');
   const [notes, setNotes] = useState('');
   const [customerId, setCustomerId] = useState('');
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -22,6 +23,7 @@ const NewTrays: React.FC<NewTraysInterface> = ({ hideModal }) => {
   const [buttonDisabled, setButtonDisabled] = useState(false);
 
   const onIncomeChange = (income: string) => setIncome(income);
+  const onInsuranceChange = (insurance: string) => setInsurance(insurance);
   const onNotesChange = (notes: string) => setNotes(notes);
 
   const onFormSubmit = async () => {
@@ -30,7 +32,7 @@ const NewTrays: React.FC<NewTraysInterface> = ({ hideModal }) => {
       const res = await sendRequest(
         `${import.meta.env.VITE_URI}/tray`,
         'POST',
-        JSON.stringify({ customerId, income, notes }),
+        JSON.stringify({ customerId, income, insurance, notes }),
         {
           'Content-Type': 'application/json',
         }
@@ -41,7 +43,7 @@ const NewTrays: React.FC<NewTraysInterface> = ({ hideModal }) => {
     }
   };
 
-  const onCustomerSelect = (customerId: string) => setCustomerId(customerId);
+  const onCustomerSelect = (customer: Customer) => setCustomerId(customer._id);
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -78,6 +80,13 @@ const NewTrays: React.FC<NewTraysInterface> = ({ hideModal }) => {
             type="number"
             onChange={onIncomeChange}
             value={income}
+            sideLabel
+          />
+          <CustomFormGroup
+            label=": تأمين منصرف"
+            type="number"
+            onChange={onInsuranceChange}
+            value={insurance}
             sideLabel
           />
           <CustomFormGroup

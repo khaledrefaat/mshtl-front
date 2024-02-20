@@ -75,9 +75,12 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
       customerData._id
     }`;
 
+    const trayUrl = `${import.meta.env.VITE_URI}/tray/${customerData.trayId}`;
+
     const returnUrl = () => {
       if (customerData.itemId) return itemUrl;
       else if (customerData.fertilizerId) return fertilizerUrl;
+      else if (customerData.trayId) return trayUrl;
       else return moneyUrl;
     };
 

@@ -73,6 +73,7 @@ export interface customerData {
   fertilizerTransactionId?: string;
   fertilizerId?: string;
   itemId?: string;
+  trayId?: string;
 }
 
 export interface Customer {
