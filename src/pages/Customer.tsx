@@ -1,3 +1,5 @@
+/* /index.html 200 */
+
 import React, { useEffect, useState } from 'react';
 import Container from '../components/shared/Container';
 import PageHeader from '../components/shared/PageHeader';
