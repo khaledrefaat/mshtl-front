@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import useHttpClient from '../components/hooks/http-hook';
 import Container from '../components/shared/Container';
@@ -12,12 +12,21 @@ import Table from '../components/table/Table';
 import TableData from '../components/table/TableData';
 import { Supplier as SupplierType } from '../data.types';
 import { convertDate, filterByName } from '../util/util';
+import { AuthContext } from '../components/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
 const Supplier = () => {
   const [supplier, setSupplier] = useState<SupplierType>();
   const [suppliers, setSuppliers] = useState<SupplierType[]>([]);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<SupplierType[]>([]);
+  const context = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  if (!context.isAdmin) {
+    navigate('/');
+  }
 
   const headers = [
     '',
