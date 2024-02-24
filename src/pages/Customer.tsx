@@ -17,6 +17,7 @@ import TableData from '../components/table/TableData';
 import Modal from '../components/shared/Modal';
 import { convertDate, filterByName } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
+import { useNavigate } from 'react-router-dom';
 
 interface CustomerInterface {
   toggleNav: () => void;
@@ -29,6 +30,8 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
   const [customer, setCustomer] = useState<CustomerType>();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<CustomerType[]>([]);
+
+  const navigate = useNavigate();
 
   const headers = [
     'التاريخ',
@@ -88,8 +91,8 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
 
     try {
       clearError();
-      const newData = await sendRequest(returnUrl(), 'DELETE');
-      setCustomer(newData.customer);
+      await sendRequest(returnUrl(), 'DELETE');
+      navigate('/');
     } catch (err) {
       console.log(err);
     }
