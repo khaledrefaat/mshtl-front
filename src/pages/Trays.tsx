@@ -52,23 +52,23 @@ const Trays = () => {
   }, [searchTerm, trays]);
 
   const handelDelete = async (tray: Tray) => {
-    if (tray.customerId && tray.transactionId) {
+    if (tray.customerId && tray.income) {
+      try {
+        clearError();
+        await sendRequest(
+          `${import.meta.env.VITE_URI}/tray/${tray._id}`,
+          'DELETE'
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (tray.customerId && tray.transactionId) {
       try {
         clearError();
         await sendRequest(
           `${import.meta.env.VITE_URI}/customer/item/${tray.customerId}/${
             tray.transactionId
           }`,
-          'DELETE'
-        );
-      } catch (err) {
-        console.log(err);
-      }
-    } else if (tray.customerId && tray.income) {
-      try {
-        clearError();
-        await sendRequest(
-          `${import.meta.env.VITE_URI}/tray/${tray._id}`,
           'DELETE'
         );
       } catch (err) {
