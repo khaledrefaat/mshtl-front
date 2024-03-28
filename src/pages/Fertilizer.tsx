@@ -13,6 +13,7 @@ import { Fertilizer, fertilizerData } from '../data.types';
 import { convertDate, filterByName } from '../util/util';
 import NewRequest from '../components/DailySales/NewRequest';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { sendRequest } from '../util/api';
 const FertilizerPage = () => {
   const {
     status,
@@ -20,7 +21,8 @@ const FertilizerPage = () => {
     error,
   }: { status: string; data: Fertilizer[] | undefined; error: any } = useQuery({
     queryKey: ['fertilizers'],
-    queryFn: fetchFertilizers,
+    queryFn: async () =>
+      await sendRequest(`${import.meta.env.VITE_URI}/fertilizer`),
   });
 
   const [selectedFertilizer, setSelectedFertilizer] = useState<
@@ -40,14 +42,6 @@ const FertilizerPage = () => {
     'الرصيد',
   ];
 
-  async function fetchFertilizers() {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_URI}/fertilizer`);
-      return await res.json();
-    } catch (err) {
-      console.log(err);
-    }
-  }
   const onFertilizerClick = async (fertilizerId: string) => {
     try {
       const selectedFertilizer = data.find(
@@ -74,12 +68,10 @@ const FertilizerPage = () => {
 
   const mutation = useMutation({
     mutationFn: async (url: string) => {
-      return await fetch(url, {
-        method: 'DELETE',
-      });
+      return sendRequest(url, true);
     },
     onSuccess: async data => {
-      const { customer, fertilizer, supplier } = await data.json();
+      const { customer, fertilizer, supplier } = await data;
 
       queryClient.invalidateQueries({ queryKey: ['fertilizers'] });
 
@@ -137,8 +129,8 @@ const FertilizerPage = () => {
             />
           </div>
         </div>
-        {error ? (
-          <Error>{error.message}</Error>
+        {error || mutation.isError ? (
+          <Error>{error.message || mutation.error.message}</Error>
         ) : (
           <Row>
             <Col sm={2}>

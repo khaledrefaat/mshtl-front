@@ -30,13 +30,13 @@ const useHttpClient = () => {
         );
 
         if (!res.ok) {
-          setError(data.msg);
-          throw new Error(data.msg);
+          setError(data.message);
+          throw new Error(data.message);
         }
         return data;
       } catch (err: any) {
         setIsLoading(false);
-        throw new Error(err.msg);
+        throw new Error(err.message);
       }
     },
     []

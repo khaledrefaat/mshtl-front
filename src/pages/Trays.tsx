@@ -9,11 +9,12 @@ import Modal from '../components/shared/Modal';
 import { convertDate, filterByName } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { sendRequest } from '../util/api';
 
 const Trays = () => {
   const { status, data, error } = useQuery({
     queryKey: ['trays'],
-    queryFn: fetchTrays,
+    queryFn: async () => await sendRequest(`${import.meta.env.VITE_URI}/tray`),
   });
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,11 +25,13 @@ const Trays = () => {
 
   const mutation = useMutation({
     async mutationFn(url: string) {
-      return fetch(url, { method: 'delete' });
+      return await sendRequest(url, true);
     },
     async onSuccess(data) {
-      const { trays, traysCount } = await data.json();
+      const { trays, traysCount } = await data;
       queryClient.invalidateQueries({ queryKey: ['trays', 'customers'] });
+      console.log(trays);
+      console.log(traysCount);
       setSearchResult(trays);
       setTraysCount(traysCount);
     },
@@ -44,19 +47,10 @@ const Trays = () => {
     'الأســــــــــــــم',
   ];
 
-  async function fetchTrays() {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_URI}/tray`);
-      const data = await res.json();
-      setTraysCount(data.count);
-      return data;
-    } catch (err) {
-      console.log(err);
-    }
-  }
   useEffect(() => {
     const timer = setTimeout(() => {
       if (status == 'success') {
+        setTraysCount(data.count);
         if (searchTerm.length > 0) {
           setSearchResult(filterByName(searchTerm, data.trays));
         } else {
@@ -69,24 +63,17 @@ const Trays = () => {
 
   const handelDelete = async (tray: Tray) => {
     if (tray.customerId && tray.income) {
-      mutation.mutate(`${import.meta.env.VITE_URI}/tray/${tray._id}`);
+      await mutation.mutateAsync(
+        `${import.meta.env.VITE_URI}/tray/${tray._id}`
+      );
     } else if (tray.customerId && tray.transactionId) {
-      mutation.mutate(
+      await mutation.mutateAsync(
         `${import.meta.env.VITE_URI}/customer/item/${tray.customerId}/${
           tray.transactionId
         }`
       );
     }
-    try {
-      setTimeout(() => {
-        fetchTrays();
-      }, 200);
-    } catch (err) {
-      console.log(err);
-    }
   };
-
-  console.log(data);
 
   return (
     <>
@@ -99,8 +86,8 @@ const Trays = () => {
           noMargin
         />
 
-        {error ? (
-          <Error>{error.message}</Error>
+        {error || mutation.isError ? (
+          <Error>{error.message || mutation.error.message}</Error>
         ) : (
           <>
             <div className="input-group d-flex justify-content-end">

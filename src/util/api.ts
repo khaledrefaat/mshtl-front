@@ -1,12 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+export async function sendRequest(url: string, isDelete = false) {
+  let res;
+  if (isDelete) res = await fetch(url, { method: 'DELETE' });
+  else res = await fetch(url);
 
-export async function getCustomers() {
-  return useQuery({
-    queryKey: ['customers'],
-    queryFn() {
-      return fetch(`${import.meta.env.VITE_URI}/customer`).then(res =>
-        res.json()
-      );
-    },
-  });
+  const result = await res.json();
+
+  if (!res.ok) throw result;
+  else return result;
 }

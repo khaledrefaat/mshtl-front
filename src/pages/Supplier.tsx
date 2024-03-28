@@ -14,6 +14,7 @@ import { convertDate, filterByName } from '../util/util';
 import { AuthContext } from '../components/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { sendRequest } from '../util/api';
 
 const Supplier = () => {
   const {
@@ -23,7 +24,7 @@ const Supplier = () => {
   }: { status: string; data: SupplierType[] | undefined; error: any } =
     useQuery({
       queryKey: ['suppliers'],
-      queryFn: fetchSuppliers,
+      queryFn: () => sendRequest(`${import.meta.env.VITE_URI}/supplier`),
     });
 
   const [supplier, setSupplier] = useState<SupplierType>();
@@ -51,12 +52,10 @@ const Supplier = () => {
 
   const mutation = useMutation({
     async mutationFn(url: string) {
-      return await fetch(url, {
-        method: 'DELETE',
-      });
+      return await sendRequest(url, true);
     },
     async onSuccess(data) {
-      const { supplier, fertilizer } = await data.json();
+      const { supplier, fertilizer } = await data;
 
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       if (fertilizer)
@@ -66,15 +65,6 @@ const Supplier = () => {
       setSupplier(supplier);
     },
   });
-
-  async function fetchSuppliers() {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_URI}/supplier`);
-      return res.json();
-    } catch (err) {
-      console.log(err);
-    }
-  }
 
   const onSupplierClick = async (supplierId: string) => {
     try {
@@ -86,13 +76,9 @@ const Supplier = () => {
   };
 
   const handelDeleteRequest = async (transactionId: string) => {
-    try {
-      mutation.mutate(
-        `${import.meta.env.VITE_URI}/supplier/${supplier?._id}/${transactionId}`
-      );
-    } catch (err) {
-      console.log(err);
-    }
+    await mutation.mutateAsync(
+      `${import.meta.env.VITE_URI}/supplier/${supplier?._id}/${transactionId}`
+    );
   };
 
   useEffect(() => {
@@ -105,8 +91,6 @@ const Supplier = () => {
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm, data]);
-
-  console.log(mutation.error);
 
   return (
     <>
@@ -130,8 +114,8 @@ const Supplier = () => {
             />
           </div>
         </div>
-        {error ? (
-          <Error>{error}</Error>
+        {error || mutation.isError ? (
+          <Error>{error.message || mutation.error.message}</Error>
         ) : (
           <Row>
             <Col sm={2}>

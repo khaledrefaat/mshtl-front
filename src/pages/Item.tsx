@@ -13,10 +13,11 @@ import { Item, itemData } from '../data.types';
 import { convertDate, filterByName } from '../util/util';
 import NewRequest from '../components/DailySales/NewRequest';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { sendRequest } from '../util/api';
 const Seed = () => {
   const { data, status, error } = useQuery({
     queryKey: ['items'],
-    queryFn: fetchItems,
+    queryFn: async () => await sendRequest(`${import.meta.env.VITE_URI}/item`),
   });
 
   const [item, setItem] = useState<Item>();
@@ -34,15 +35,6 @@ const Seed = () => {
     'الرصيد',
   ];
 
-  async function fetchItems() {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_URI}/item`);
-      return res.json();
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
   async function onItemClick(itemId: string) {
     try {
       const item = data.find(item => item._id === itemId);
@@ -56,10 +48,10 @@ const Seed = () => {
 
   const mutation = useMutation({
     async mutationFn(url: string) {
-      return await fetch(url, { method: 'delete' });
+      return await sendRequest(url, true);
     },
     async onSuccess(data) {
-      const { item, customer } = await data.json();
+      const { item, customer } = await data;
       queryClient.invalidateQueries({ queryKey: ['items'] });
       if (customer) queryClient.invalidateQueries({ queryKey: ['customers'] });
 
@@ -70,15 +62,17 @@ const Seed = () => {
 
   const handelDeleteItemData = async (data: itemData) => {
     if (data.customerTransactionId) {
-      mutation.mutate(
+      await mutation.mutateAsync(
         `${import.meta.env.VITE_URI}/customer/item/${data.customerId}/${
           data.customerTransactionId
         }`
       );
     } else if (data.seedingId) {
-      mutation.mutate(`${import.meta.env.VITE_URI}/seed/${data.seedingId}`);
+      await mutation.mutateAsync(
+        `${import.meta.env.VITE_URI}/seed/${data.seedingId}`
+      );
     } else if (data.dailySaleId) {
-      mutation.mutate(
+      await mutation.mutateAsync(
         `${import.meta.env.VITE_URI}/item/${item?._id}/${data._id}`
       );
     }
@@ -119,8 +113,8 @@ const Seed = () => {
             />
           </div>
         </div>
-        {error ? (
-          <Error>{error.message}</Error>
+        {error || mutation.isError ? (
+          <Error>{error.message || mutation.error.message}</Error>
         ) : (
           <Row>
             <Col sm={2}>

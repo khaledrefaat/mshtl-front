@@ -6,10 +6,11 @@ import { Table, Nav as NavBootstrap, Navbar } from 'react-bootstrap';
 import NewRequest from '../components/DailySales/NewRequest';
 import NewDailySales from '../components/DailySales/NewDailySales';
 import { DailySale } from '../data.types';
+import useHttpClient from '../components/hooks/http-hook';
 import Modal from '../components/shared/Modal';
-import { convertDate, filterByName, monthList, returnUrl } from '../util/util';
+import { convertDate, returnUrl } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
-import { useQuery } from '@tanstack/react-query';
+import Pagination from 'react-bootstrap/Pagination';
 
 interface DailySalesHeaderInterface {
   children?: ReactNode;
@@ -34,54 +35,66 @@ const DailySales: React.FC<DailySalesInterface> = ({
   toggleNav,
   printMode,
 }) => {
-  const {
-    status,
-    data,
-  }: {
-    status: string;
-    data: { dailySales: DailySale[]; organizedDailySales: any } | undefined;
-    error: any;
-  } = useQuery({
-    queryKey: ['dailySales'],
-    queryFn: fetchDailySales,
-  });
-
   const [showNewCustomerModal, setShowNewCustomerModal] = useState(false);
   const [showNewSupplierModal, setShowNewSupplierModal] = useState(false);
   const [showLoanerModal, setShowLoanerModal] = useState(false);
   const [showNewItemModal, setShowNewItemModal] = useState(false);
   const [showNewFertilizerModal, setShowNewFertilizerModal] = useState(false);
   const [showNewDailySalesModal, setShowNewDailySalesModal] = useState(false);
+  const { isLoading, clearError, sendRequest } = useHttpClient();
+  const [dailySales, setDailySales] = useState<{
+    dailySales: DailySale[];
+    pages: number;
+  }>();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<DailySale[]>([]);
+  const [page, setPage] = useState(1);
+  const [maxPages, setMaxPages] = useState(1);
 
-  async function fetchDailySales() {
+  const fetchDailySales = async page => {
     try {
-      return (await fetch(`${import.meta.env.VITE_URI}/daily-sales`)).json();
+      clearError();
+      const res = await sendRequest(
+        `${import.meta.env.VITE_URI}/daily-sales/${page}`
+      );
+      setDailySales(res);
+      setMaxPages(res.pages);
     } catch (err) {
       console.log(err);
     }
-  }
+  };
   useEffect(() => {
-    fetchDailySales();
+    fetchDailySales(1);
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      fetchDailySales(page);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page]);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
       if (searchTerm.length > 0) {
-        setSearchResult(filterByName(searchTerm, data?.dailySales));
+        const res = await sendRequest(
+          `${import.meta.env.VITE_URI}/daily-sales/search/${searchTerm}`
+        );
+        console.log(res);
+        setSearchResult(res.dailySales);
+        setMaxPages(res.pages);
       } else {
-        setSearchResult(data?.dailySales || []);
+        setSearchResult(dailySales?.dailySales || []);
+        setMaxPages(dailySales?.pages || 1);
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchTerm, data]);
+  }, [searchTerm, dailySales]);
 
   const sendDeleteRequest = async (url: string) => {
     try {
-      const newData = await fetch(url, {
-        method: 'DELETE',
-      });
+      clearError();
+      const newData = await sendRequest(url, 'DELETE');
       if (newData) setTimeout(fetchDailySales, 500);
     } catch (err) {
       console.log(err);
@@ -116,9 +129,60 @@ const DailySales: React.FC<DailySalesInterface> = ({
     return () => clearTimeout(timer);
   }, []);
 
+  function calculatePageRange(currentPage, totalPages) {
+    // Set the total number of pages to display (including the current page).
+    const totalPagesToDisplay = 30;
+
+    // Ensure totalPages is a positive integer.
+    totalPages = Math.max(1, Math.floor(totalPages));
+
+    // Calculate the middle point of the range (rounded down).
+    const middlePage = Math.min(totalPages, Math.floor(currentPage));
+
+    // Determine the lower and upper bounds of the range.
+    let lowerBound = Math.max(
+      1,
+      middlePage - Math.floor((totalPagesToDisplay - 1) / 2)
+    );
+    let upperBound = Math.min(lowerBound + totalPagesToDisplay - 1, totalPages);
+
+    // Adjust bounds to fit within total pages (if needed)
+    if (upperBound - lowerBound + 1 < totalPagesToDisplay) {
+      lowerBound = Math.max(
+        1,
+        lowerBound - (totalPagesToDisplay - (upperBound - lowerBound + 1))
+      );
+    }
+
+    return { lowerBound, upperBound };
+  }
+
+  function renderPages() {
+    const items = [];
+    const { lowerBound, upperBound } = calculatePageRange(page, maxPages);
+
+    for (let number = lowerBound; number <= upperBound; number++) {
+      items.push(
+        <Pagination.Item
+          key={number}
+          active={number === page}
+          onClick={() => setPage(number)}
+        >
+          {number}
+        </Pagination.Item>
+      );
+    }
+
+    return (
+      <div className="mb-3">
+        <Pagination className="justify-content-center">{items}</Pagination>
+      </div>
+    );
+  }
+
   return (
     <>
-      {status === 'pending' && <Modal spinner />}
+      {isLoading && <Modal spinner />}
       <Container>
         {!printMode && (
           <>
@@ -233,44 +297,8 @@ const DailySales: React.FC<DailySalesInterface> = ({
               ))}
           </tbody>
         </Table>
+        {!searchTerm && renderPages()}
       </Container>
-      {!printMode && (
-        <div className="side-date--bar">
-          <div className="years">
-            {data?.organizedDailySales &&
-              Object.keys(data?.organizedDailySales)
-                .reverse()
-                .map(year => (
-                  <div className="side-date--year" key={year}>
-                    <h3 className="mt-3 fw-bold">{year}</h3>
-                    <ul>
-                      {Object.keys(data.organizedDailySales[year])
-                        .reverse()
-                        .map(month => (
-                          <li
-                            key={month}
-                            onClick={() => {
-                              setSearchResult(
-                                data.organizedDailySales[year][month].reverse()
-                              );
-                            }}
-                          >
-                            {monthList[month]}
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                ))}
-          </div>
-          <h4
-            onClick={() => {
-              if (data?.dailySales) setSearchResult(data?.dailySales);
-            }}
-          >
-            الكل
-          </h4>
-        </div>
-      )}
       {showNewCustomerModal && (
         <NewRequest
           title="أســــــــــــــــــــــــــــم العميـــــــــــــــــــــــل"

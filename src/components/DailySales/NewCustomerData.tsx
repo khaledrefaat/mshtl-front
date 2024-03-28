@@ -1,19 +1,43 @@
 import { useEffect, useState } from 'react';
 import CustomFormGroup from '../form/CustomFormGroup';
 import { Customer, Fertilizer, Item } from '../../data.types';
-import useHttpClient from '../hooks/http-hook';
 import Modal from '../shared/Modal';
 import CustomButton from '../shared/CustomButton';
 import CustomSelect from '../form/CustomSelect';
 import Error from '../shared/Error';
 import SwitchButtonContainer from '../form/SwitchButtonContainer';
 import SwitchButton from '../form/SwitchButton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface NewCustomerDataInterface {
   hideModal: () => void;
 }
 
 const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
+  const {
+    status: customerStatus,
+    data: customerData,
+  }: { status: string; data: Customer[] | undefined; error: any } = useQuery({
+    queryKey: ['customers'],
+    queryFn: () => fetchData(`${import.meta.env.VITE_URI}/customer`),
+  });
+
+  const {
+    status: itemStatus,
+    data: itemData,
+  }: { status: string; data: Item[] | undefined; error: any } = useQuery({
+    queryKey: ['items'],
+    queryFn: () => fetchData(`${import.meta.env.VITE_URI}/item`),
+  });
+
+  const {
+    status: fertilizerStatus,
+    data: fertilizerData,
+  }: { status: string; data: Fertilizer[] | undefined; error: any } = useQuery({
+    queryKey: ['fertilizers'],
+    queryFn: () => fetchData(`${import.meta.env.VITE_URI}/fertilizer`),
+  });
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerId, setCustomerId] = useState<string | null>('');
 
@@ -22,7 +46,6 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
 
   const [fertilizers, setFertilizers] = useState<Fertilizer[]>([]);
   const [fertilizer, setFertilizer] = useState<Fertilizer | null>();
-  const { isLoading, error, clearError, sendRequest } = useHttpClient();
 
   const [paid, setPaid] = useState('');
   const [discount, setDiscount] = useState('');
@@ -36,26 +59,20 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
   const onTraysChange = (trays: string) => setTrays(trays);
   const onStatementChange = (statement: string) => setStatement(statement);
 
+  async function fetchData(url: string) {
+    try {
+      const res = await fetch(url);
+      return res.json();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        clearError();
-        const customers = await sendRequest(
-          `${import.meta.env.VITE_URI}/customer`
-        );
-        const items = await sendRequest(`${import.meta.env.VITE_URI}/item`);
-        const fertilizers = await sendRequest(
-          `${import.meta.env.VITE_URI}/fertilizer`
-        );
-        setCustomers(customers);
-        setItems(items);
-        setFertilizers(fertilizers);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchCustomers();
-  }, []);
+    if (customerStatus == 'success') setCustomers(customerData);
+    if (itemStatus == 'success') setItems(itemData);
+    if (fertilizerStatus == 'success') setFertilizers(fertilizerData);
+  }, [customerData, itemData, fertilizerData]);
 
   const onCustomerSelect = (customer: Customer | null) => {
     if (customer === null) setCustomerId(null);
@@ -82,53 +99,60 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
     }
   };
 
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    async mutationFn(data: any) {
+      const res = await fetch(data.url, {
+        method: 'POST',
+        body: JSON.stringify(data.body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const result = await res.json();
+      if (!res.ok) throw result;
+      return result;
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ['customers', 'fertilizers', 'items'],
+      });
+      hideModal();
+    },
+  });
   const onFormSubmit = async () => {
     try {
-      clearError();
-      let newCustomerTransaction;
       if (switchButton === 'fertilizer') {
-        newCustomerTransaction = await sendRequest(
-          `${import.meta.env.VITE_URI}/customer/fertilizer/${customerId}`,
-          'POST',
-          JSON.stringify({
+        await mutation.mutateAsync({
+          url: `${import.meta.env.VITE_URI}/customer/fertilizer/${customerId}`,
+          body: {
             units: trays,
             paid,
             statement,
             fertilizerId: fertilizer?._id,
-          }),
-          {
-            'Content-Type': 'application/json',
-          }
-        );
+          },
+        });
       } else if (switchButton === 'item') {
-        newCustomerTransaction = await sendRequest(
-          `${import.meta.env.VITE_URI}/customer/item/${customerId}`,
-          'POST',
-          JSON.stringify({
+        await mutation.mutateAsync({
+          url: `${import.meta.env.VITE_URI}/customer/item/${customerId}`,
+          body: {
             trays,
             paid,
             statement,
             itemId: item?._id,
-          }),
-          {
-            'Content-Type': 'application/json',
-          }
-        );
+          },
+        });
       } else if (switchButton === 'moneyTransaction') {
-        newCustomerTransaction = await sendRequest(
-          `${import.meta.env.VITE_URI}/customer/${customerId}`,
-          'POST',
-          JSON.stringify({
+        await mutation.mutateAsync({
+          url: `${import.meta.env.VITE_URI}/customer/${customerId}`,
+          body: {
             paid,
             statement,
             discount,
-          }),
-          {
-            'Content-Type': 'application/json',
-          }
-        );
+          },
+        });
       }
-      if (newCustomerTransaction) hideModal();
     } catch (err) {
       console.log(err);
     }
@@ -142,7 +166,9 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
 
   return (
     <>
-      {isLoading && <Modal spinner />}
+      {customerStatus == 'pending' && <Modal spinner />}
+      {itemStatus == 'pending' && <Modal spinner />}
+      {fertilizerStatus == 'pending' && <Modal spinner />}
       <CustomSelect
         title="اختر العميل"
         list={customers}
@@ -277,7 +303,7 @@ const NewCustomerData: React.FC<NewCustomerDataInterface> = ({ hideModal }) => {
               </CustomButton>
             </>
           )}
-          {error && <Error>{error}</Error>}
+          {mutation.isError && <Error>{mutation.error.message}</Error>}
         </>
       )}
     </>

@@ -17,6 +17,7 @@ import Modal from '../components/shared/Modal';
 import { convertDate, filterByName } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { sendRequest } from '../util/api';
 
 interface CustomerInterface {
   toggleNav: () => void;
@@ -31,7 +32,8 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
   }: { status: string; data: CustomerType[] | undefined; error: any } =
     useQuery({
       queryKey: ['customers'],
-      queryFn: fetchCustomers,
+      queryFn: async () =>
+        await sendRequest(`${import.meta.env.VITE_URI}/customer`),
     });
 
   const [customer, setCustomer] = useState<CustomerType>();
@@ -41,13 +43,9 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async (url: string) => {
-      return await fetch(url, {
-        method: 'DELETE',
-      });
-    },
+    mutationFn: async (url: string) => await sendRequest(url, true),
     onSuccess: async data => {
-      const { customer, fertilizer, trays, item } = await data.json();
+      const { customer, fertilizer, trays, item } = await data;
 
       queryClient.invalidateQueries({ queryKey: ['customers'] });
 
@@ -75,15 +73,6 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
   ];
 
   const headersWithTrashIcon = ['', ...headers];
-
-  async function fetchCustomers() {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_URI}/customer`);
-      return await res.json();
-    } catch (err) {
-      console.log(err);
-    }
-  }
 
   function onCustomerClick(customerId: string) {
     try {
@@ -118,7 +107,7 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
       else return moneyUrl;
     };
 
-    mutation.mutate(returnUrl());
+    mutation.mutateAsync(returnUrl());
   };
 
   useEffect(() => {
@@ -174,8 +163,8 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
             </div>
           </div>
         )}
-        {error ? (
-          <Error>{error.message}</Error>
+        {error || mutation.isError ? (
+          <Error>{error.message || mutation.error.message}</Error>
         ) : (
           <Row>
             {!printMode && (

@@ -15,7 +15,7 @@ import NewLoan from './NewLoan';
 
 interface NewDailySalesInterface {
   hideModal: () => void;
-  fetchData: () => void;
+  fetchData: (page: number) => void;
 }
 
 const NewDailySales: React.FC<NewDailySalesInterface> = ({
@@ -31,7 +31,7 @@ const NewDailySales: React.FC<NewDailySalesInterface> = ({
   // the only job of this onSubmit function is to call the fetchDataFunction instead of passing it to each component
   const onSubmit = () => {
     hideModal();
-    setTimeout(fetchData, 500);
+    setTimeout(() => fetchData(1), 500);
   };
 
   const returnComponent = (value: string) => {
