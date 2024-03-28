@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import useHttpClient from '../components/hooks/http-hook';
 import Container from '../components/shared/Container';
 import Error from '../components/shared/Error';
 import Modal from '../components/shared/Modal';
@@ -13,10 +12,14 @@ import TableData from '../components/table/TableData';
 import { Item, itemData } from '../data.types';
 import { convertDate, filterByName } from '../util/util';
 import NewRequest from '../components/DailySales/NewRequest';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 const Seed = () => {
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+  const { data, status, error } = useQuery({
+    queryKey: ['items'],
+    queryFn: fetchItems,
+  });
+
   const [item, setItem] = useState<Item>();
-  const [items, setItems] = useState<Item[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<Item[]>([]);
   const [modal, setModal] = useState(false);
@@ -31,84 +34,71 @@ const Seed = () => {
     'الرصيد',
   ];
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        clearError();
-        const res = await sendRequest(`${import.meta.env.VITE_URI}/item`);
-        setItems(res);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchItems();
-  }, []);
-
-  const onItemClick = async (itemId: string) => {
+  async function fetchItems() {
     try {
-      const item = items.find(item => item._id === itemId);
+      const res = await fetch(`${import.meta.env.VITE_URI}/item`);
+      return res.json();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async function onItemClick(itemId: string) {
+    try {
+      const item = data.find(item => item._id === itemId);
       setItem(item);
     } catch (err) {
       console.log(err);
     }
-  };
+  }
 
-  const fetchAndSelectItem = async () => {
-    const items = await sendRequest(`${import.meta.env.VITE_URI}/item`);
-    setItems(items);
-    let newItem = items.find((newItem: Item) => newItem._id === item?._id);
-    setItem(newItem);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    async mutationFn(url: string) {
+      return await fetch(url, { method: 'delete' });
+    },
+    async onSuccess(data) {
+      const { item, customer } = await data.json();
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      if (customer) queryClient.invalidateQueries({ queryKey: ['customers'] });
+
+      // update selected Item
+      setItem(item);
+    },
+  });
+
+  const handelDeleteItemData = async (data: itemData) => {
+    if (data.customerTransactionId) {
+      mutation.mutate(
+        `${import.meta.env.VITE_URI}/customer/item/${data.customerId}/${
+          data.customerTransactionId
+        }`
+      );
+    } else if (data.seedingId) {
+      mutation.mutate(`${import.meta.env.VITE_URI}/seed/${data.seedingId}`);
+    } else if (data.dailySaleId) {
+      mutation.mutate(
+        `${import.meta.env.VITE_URI}/item/${item?._id}/${data._id}`
+      );
+    }
   };
 
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchTerm.length > 0) {
-        setSearchResult(filterByName(searchTerm, items));
+        setSearchResult(filterByName(searchTerm, data));
       } else {
-        setSearchResult(items);
+        setSearchResult(data);
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchTerm, items]);
-
-  const handelDeleteItemData = async (data: itemData) => {
-    if (data.customerTransactionId) {
-      try {
-        clearError();
-        const newData = await sendRequest(
-          `${import.meta.env.VITE_URI}/customer/item/${data.customerId}/${
-            data.customerTransactionId
-          }`,
-          'DELETE'
-        );
-        if (newData) fetchAndSelectItem();
-      } catch (err) {
-        console.log(err);
-      }
-    } else if (data.seedingId) {
-      try {
-        clearError();
-        const res = await sendRequest(
-          `${import.meta.env.VITE_URI}/seed/${data.seedingId}`,
-          'DELETE'
-        );
-        if (res) fetchAndSelectItem();
-      } catch (err) {
-        console.log(err);
-      }
-    } else if (data.dailySaleId) {
-      clearError();
-      const newData = await sendRequest(
-        `${import.meta.env.VITE_URI}/item/${item?._id}/${data._id}`,
-        'DELETE'
-      );
-      if (newData) fetchAndSelectItem();
-    }
-  };
+  }, [searchTerm, data]);
 
   return (
     <>
-      {isLoading && <Modal spinner />}
+      {status == 'pending' && <Modal spinner />}
+      {mutation.isPending && <Modal spinner />}
       <Container>
         <PageHeader
           itemName="أسم الصنف "
@@ -130,7 +120,7 @@ const Seed = () => {
           </div>
         </div>
         {error ? (
-          <Error>{error}</Error>
+          <Error>{error.message}</Error>
         ) : (
           <Row>
             <Col sm={2}>

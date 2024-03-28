@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import useHttpClient from '../components/hooks/http-hook';
 import Container from '../components/shared/Container';
 import Error from '../components/shared/Error';
 import Modal from '../components/shared/Modal';
@@ -14,11 +13,20 @@ import { Supplier as SupplierType } from '../data.types';
 import { convertDate, filterByName } from '../util/util';
 import { AuthContext } from '../components/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const Supplier = () => {
+  const {
+    status,
+    data,
+    error,
+  }: { status: string; data: SupplierType[] | undefined; error: any } =
+    useQuery({
+      queryKey: ['suppliers'],
+      queryFn: fetchSuppliers,
+    });
+
   const [supplier, setSupplier] = useState<SupplierType>();
-  const [suppliers, setSuppliers] = useState<SupplierType[]>([]);
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<SupplierType[]>([]);
   const context = useContext(AuthContext);
@@ -39,24 +47,38 @@ const Supplier = () => {
     'المدفوع',
     'الرصيد',
   ];
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchSuppliers = async () => {
-      try {
-        clearError();
-        const data = await sendRequest(`${import.meta.env.VITE_URI}/supplier`);
-        setSuppliers(data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchSuppliers();
-  }, []);
+  const mutation = useMutation({
+    async mutationFn(url: string) {
+      return await fetch(url, {
+        method: 'DELETE',
+      });
+    },
+    async onSuccess(data) {
+      const { supplier, fertilizer } = await data.json();
+
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      if (fertilizer)
+        queryClient.invalidateQueries({ queryKey: ['fertilizers'] });
+
+      // update supplier
+      setSupplier(supplier);
+    },
+  });
+
+  async function fetchSuppliers() {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_URI}/supplier`);
+      return res.json();
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   const onSupplierClick = async (supplierId: string) => {
     try {
-      clearError();
-      const supplier = suppliers.find(supplier => supplier._id == supplierId);
+      const supplier = data.find(supplier => supplier._id == supplierId);
       setSupplier(supplier);
     } catch (err) {
       console.log(err);
@@ -65,21 +87,9 @@ const Supplier = () => {
 
   const handelDeleteRequest = async (transactionId: string) => {
     try {
-      clearError();
-      const newData = await sendRequest(
-        `${import.meta.env.VITE_URI}/supplier/${
-          supplier?._id
-        }/${transactionId}`,
-        'DELETE'
+      mutation.mutate(
+        `${import.meta.env.VITE_URI}/supplier/${supplier?._id}/${transactionId}`
       );
-      if (newData) {
-        const data = await sendRequest(`${import.meta.env.VITE_URI}/supplier`);
-        setSuppliers(data);
-        const findSupplier = data.find(
-          (newSupplier: SupplierType) => newSupplier._id === supplier?._id
-        );
-        setSupplier(findSupplier);
-      }
     } catch (err) {
       console.log(err);
     }
@@ -88,17 +98,20 @@ const Supplier = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchTerm.length > 0) {
-        setSearchResult(filterByName(searchTerm, suppliers));
+        setSearchResult(filterByName(searchTerm, data));
       } else {
-        setSearchResult(suppliers);
+        setSearchResult(data);
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchTerm, suppliers]);
+  }, [searchTerm, data]);
+
+  console.log(mutation.error);
 
   return (
     <>
-      {isLoading && <Modal spinner />}
+      {status == 'pending' && <Modal spinner />}
+      {mutation.isPending && <Modal spinner />}
       <Container>
         <PageHeader
           itemName="أسم ألمورد "

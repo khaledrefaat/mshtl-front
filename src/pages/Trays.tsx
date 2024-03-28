@@ -2,20 +2,37 @@ import { useEffect, useState } from 'react';
 import Container from '../components/shared/Container';
 import Error from '../components/shared/Error';
 import PageHeader from '../components/shared/PageHeader';
-import useHttpClient from '../components/hooks/http-hook';
 import Table from '../components/table/Table';
 import TableData from '../components/table/TableData';
 import { Tray } from '../data.types';
 import Modal from '../components/shared/Modal';
 import { convertDate, filterByName } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const Trays = () => {
-  const [trays, setTrays] = useState<Tray[]>([]);
+  const { status, data, error } = useQuery({
+    queryKey: ['trays'],
+    queryFn: fetchTrays,
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<Tray[]>([]);
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const [traysCount, setTraysCount] = useState<number>(0);
+
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    async mutationFn(url: string) {
+      return fetch(url, { method: 'delete' });
+    },
+    async onSuccess(data) {
+      const { trays, traysCount } = await data.json();
+      queryClient.invalidateQueries({ queryKey: ['trays', 'customers'] });
+      setSearchResult(trays);
+      setTraysCount(traysCount);
+    },
+  });
 
   const headers = [
     '',
@@ -27,53 +44,38 @@ const Trays = () => {
     'الأســــــــــــــم',
   ];
 
-  const fetchTrays = async () => {
+  async function fetchTrays() {
     try {
-      const res = await sendRequest(`${import.meta.env.VITE_URI}/tray`);
-      setTrays(res.trays);
-      setTraysCount(res.count);
+      const res = await fetch(`${import.meta.env.VITE_URI}/tray`);
+      const data = await res.json();
+      setTraysCount(data.count);
+      return data;
     } catch (err) {
       console.log(err);
     }
-  };
-  useEffect(() => {
-    fetchTrays();
-  }, []);
-
+  }
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchTerm.length > 0) {
-        setSearchResult(filterByName(searchTerm, trays));
-      } else {
-        setSearchResult(trays);
+      if (status == 'success') {
+        if (searchTerm.length > 0) {
+          setSearchResult(filterByName(searchTerm, data.trays));
+        } else {
+          setSearchResult(data.trays);
+        }
       }
     }, 200);
     return () => clearTimeout(timer);
-  }, [searchTerm, trays]);
+  }, [searchTerm, data]);
 
   const handelDelete = async (tray: Tray) => {
     if (tray.customerId && tray.income) {
-      try {
-        clearError();
-        await sendRequest(
-          `${import.meta.env.VITE_URI}/tray/${tray._id}`,
-          'DELETE'
-        );
-      } catch (err) {
-        console.log(err);
-      }
+      mutation.mutate(`${import.meta.env.VITE_URI}/tray/${tray._id}`);
     } else if (tray.customerId && tray.transactionId) {
-      try {
-        clearError();
-        await sendRequest(
-          `${import.meta.env.VITE_URI}/customer/item/${tray.customerId}/${
-            tray.transactionId
-          }`,
-          'DELETE'
-        );
-      } catch (err) {
-        console.log(err);
-      }
+      mutation.mutate(
+        `${import.meta.env.VITE_URI}/customer/item/${tray.customerId}/${
+          tray.transactionId
+        }`
+      );
     }
     try {
       setTimeout(() => {
@@ -84,9 +86,12 @@ const Trays = () => {
     }
   };
 
+  console.log(data);
+
   return (
     <>
-      {isLoading && <Modal spinner />}
+      {status == 'pending' && <Modal spinner />}
+      {mutation.isPending && <Modal spinner />}
       <Container>
         <PageHeader
           title="صوانـــــــــــــــــــــي"
@@ -95,7 +100,7 @@ const Trays = () => {
         />
 
         {error ? (
-          <Error>{error}</Error>
+          <Error>{error.message}</Error>
         ) : (
           <>
             <div className="input-group d-flex justify-content-end">

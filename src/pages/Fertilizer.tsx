@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import useHttpClient from '../components/hooks/http-hook';
 import Container from '../components/shared/Container';
 import Error from '../components/shared/Error';
 import Modal from '../components/shared/Modal';
@@ -13,12 +12,20 @@ import TableData from '../components/table/TableData';
 import { Fertilizer, fertilizerData } from '../data.types';
 import { convertDate, filterByName } from '../util/util';
 import NewRequest from '../components/DailySales/NewRequest';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 const FertilizerPage = () => {
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+  const {
+    status,
+    data,
+    error,
+  }: { status: string; data: Fertilizer[] | undefined; error: any } = useQuery({
+    queryKey: ['fertilizers'],
+    queryFn: fetchFertilizers,
+  });
+
   const [selectedFertilizer, setSelectedFertilizer] = useState<
     Fertilizer | undefined
   >();
-  const [fertilizers, setFertilizers] = useState<Fertilizer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<Fertilizer[]>([]);
   const [modal, setModal] = useState(false);
@@ -33,22 +40,17 @@ const FertilizerPage = () => {
     'الرصيد',
   ];
 
-  useEffect(() => {
-    const fetchFertilizers = async () => {
-      try {
-        clearError();
-        const res = await sendRequest(`${import.meta.env.VITE_URI}/fertilizer`); // Update endpoint
-        setFertilizers(res);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchFertilizers();
-  }, []);
-
+  async function fetchFertilizers() {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_URI}/fertilizer`);
+      return await res.json();
+    } catch (err) {
+      console.log(err);
+    }
+  }
   const onFertilizerClick = async (fertilizerId: string) => {
     try {
-      const selectedFertilizer = fertilizers.find(
+      const selectedFertilizer = data.find(
         fertilizer => fertilizer._id === fertilizerId
       );
       setSelectedFertilizer(selectedFertilizer);
@@ -60,63 +62,61 @@ const FertilizerPage = () => {
   useEffect(() => {
     const searchTimer = setTimeout(() => {
       if (searchTerm.length > 0) {
-        setSearchResult(filterByName(searchTerm, fertilizers));
+        setSearchResult(filterByName(searchTerm, data));
       } else {
-        setSearchResult(fertilizers);
+        setSearchResult(data);
       }
-    }, 300);
+    }, 200);
     return () => clearTimeout(searchTimer);
-  }, [searchTerm, fertilizers]);
+  }, [searchTerm, data]);
 
-  const fetchAndSelectFertilizer = async () => {
-    const fertilizers = await sendRequest(
-      `${import.meta.env.VITE_URI}/fertilizer`
-    ); //
-    setFertilizers(fertilizers);
-    const newFertilizer = fertilizers.find(
-      (newFertilizer: Fertilizer) =>
-        newFertilizer._id === selectedFertilizer?._id
-    );
-    setSelectedFertilizer(newFertilizer);
-  };
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (url: string) => {
+      return await fetch(url, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: async data => {
+      const { customer, fertilizer, supplier } = await data.json();
+
+      queryClient.invalidateQueries({ queryKey: ['fertilizers'] });
+
+      if (customer) queryClient.invalidateQueries({ queryKey: ['customers'] });
+      if (supplier) queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+
+      // update selected fertilizer
+      setSelectedFertilizer(fertilizer);
+    },
+  });
 
   const handleDeleteFertilizerData = async (data: fertilizerData) => {
-    let newData;
     if (data.supplierId) {
-      try {
-        clearError();
-        if (data.supplierId) {
-          newData = await sendRequest(
-            `${import.meta.env.VITE_URI}/supplier/${data.supplierId}/${
-              data.supplierTransactionId
-            }`,
-            'DELETE'
-          );
-        } else if (data.customerId) {
-          newData = await sendRequest(
-            `${import.meta.env.VITE_URI}/customer/fertilizer/${
-              data.customerId
-            }/${data.customerTransactionId}`,
-            'DELETE'
-          );
-        }
-      } catch (err) {
-        console.log(err);
-      }
+      mutation.mutate(
+        `${import.meta.env.VITE_URI}/supplier/${data.supplierId}/${
+          data.supplierTransactionId
+        }`
+      );
+    } else if (data.customerId) {
+      mutation.mutate(
+        `${import.meta.env.VITE_URI}/customer/fertilizer/${data.customerId}/${
+          data.customerTransactionId
+        }`
+      );
     } else if (data.dailySaleId) {
-      newData = await sendRequest(
+      mutation.mutate(
         `${import.meta.env.VITE_URI}/fertilizer/${selectedFertilizer?._id}/${
           data._id
-        }`,
-        'DELETE'
+        }`
       );
     }
-    if (newData) fetchAndSelectFertilizer();
   };
 
   return (
     <>
-      {isLoading && <Modal spinner />}
+      {status == 'pending' && <Modal spinner />}
+      {mutation.isPending && !mutation.isSuccess && <Modal spinner />}
       <Container>
         <PageHeader
           itemName="اسم السماد أو المبيد"
@@ -138,7 +138,7 @@ const FertilizerPage = () => {
           </div>
         </div>
         {error ? (
-          <Error>{error}</Error>
+          <Error>{error.message}</Error>
         ) : (
           <Row>
             <Col sm={2}>

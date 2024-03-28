@@ -65,7 +65,8 @@ export interface customerData {
   total: number;
   trays: number;
   unitPrice?: number;
-  paid: number;
+  paid?: number;
+  discount?: number;
   statement?: string;
   date?: string;
   units?: number;

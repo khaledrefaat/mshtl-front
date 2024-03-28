@@ -25,6 +25,10 @@ import { useEffect, useState } from 'react';
 import Fertilizer from './pages/Fertilizer';
 import Loan from './pages/Loan';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
 export default function App() {
   const { token, isAdmin, login, logout } = useAuth();
   const [printMode, setPrintMode] = useState(false);
@@ -40,54 +44,59 @@ export default function App() {
   const toggleNav = () => setPrintMode(printMode => !printMode);
 
   return (
-    <Router>
-      <AuthContext.Provider
-        value={{
-          isLoggedIn: !!token,
-          isAdmin,
-          token,
-          login,
-          logout,
-        }}
-      >
-        {typeof token === 'string' ? (
-          <>
-            {!printMode && <Nav />}
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <DailySales toggleNav={toggleNav} printMode={printMode} />
-                }
-              />
-              <Route path="/order-seeds" element={<OrderSeedings />} />
-              <Route path="/item" element={<Item />} />
-              <Route path="/trays" element={<Trays />} />
-              <Route path="/planting-notebook" element={<PlantingNoteBook />} />
-              <Route
-                path="/customers"
-                element={
-                  <Customer toggleNav={toggleNav} printMode={printMode} />
-                }
-              />
-              <Route path="/suppliers" element={<Supplier />} />
-              <Route path="/fixed-salary" element={<FixedSalary />} />
-              <Route path="/employment" element={<Employment />} />
-              <Route path="/hospitality" element={<Hospitality />} />
-              <Route path="/electricity" element={<Electricity />} />
-              <Route path="/gas" element={<Gas />} />
-              <Route path="/requirements" element={<Requirements />} />
-              <Route path="/loan" element={<Loan />} />
-              <Route path="/fertilizer" element={<Fertilizer />} />
-              <Route path="/water" element={<Water />} />
-            </Routes>
-          </>
-        ) : (
-          <>
-            <Login />
-          </>
-        )}
-      </AuthContext.Provider>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <AuthContext.Provider
+          value={{
+            isLoggedIn: !!token,
+            isAdmin,
+            token,
+            login,
+            logout,
+          }}
+        >
+          {typeof token === 'string' ? (
+            <>
+              {!printMode && <Nav />}
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <DailySales toggleNav={toggleNav} printMode={printMode} />
+                  }
+                />
+                <Route path="/order-seeds" element={<OrderSeedings />} />
+                <Route path="/item" element={<Item />} />
+                <Route path="/trays" element={<Trays />} />
+                <Route
+                  path="/planting-notebook"
+                  element={<PlantingNoteBook />}
+                />
+                <Route
+                  path="/customers"
+                  element={
+                    <Customer toggleNav={toggleNav} printMode={printMode} />
+                  }
+                />
+                <Route path="/suppliers" element={<Supplier />} />
+                <Route path="/fixed-salary" element={<FixedSalary />} />
+                <Route path="/employment" element={<Employment />} />
+                <Route path="/hospitality" element={<Hospitality />} />
+                <Route path="/electricity" element={<Electricity />} />
+                <Route path="/gas" element={<Gas />} />
+                <Route path="/requirements" element={<Requirements />} />
+                <Route path="/loan" element={<Loan />} />
+                <Route path="/fertilizer" element={<Fertilizer />} />
+                <Route path="/water" element={<Water />} />
+              </Routes>
+            </>
+          ) : (
+            <>
+              <Login />
+            </>
+          )}
+        </AuthContext.Provider>
+      </Router>
+    </QueryClientProvider>
   );
 }

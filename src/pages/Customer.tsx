@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Container from '../components/shared/Container';
 import PageHeader from '../components/shared/PageHeader';
-import useHttpClient from '../components/hooks/http-hook';
 import Table from '../components/table/Table';
 import {
   Customer as CustomerType,
@@ -17,7 +16,7 @@ import TableData from '../components/table/TableData';
 import Modal from '../components/shared/Modal';
 import { convertDate, filterByName } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
-import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface CustomerInterface {
   toggleNav: () => void;
@@ -25,18 +24,50 @@ interface CustomerInterface {
 }
 
 const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();
-  const [customers, setCustomers] = useState<CustomerType[]>([]);
+  const {
+    status,
+    data,
+    error,
+  }: { status: string; data: CustomerType[] | undefined; error: any } =
+    useQuery({
+      queryKey: ['customers'],
+      queryFn: fetchCustomers,
+    });
+
   const [customer, setCustomer] = useState<CustomerType>();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<CustomerType[]>([]);
 
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (url: string) => {
+      return await fetch(url, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: async data => {
+      const { customer, fertilizer, trays, item } = await data.json();
+
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+
+      if (fertilizer)
+        queryClient.invalidateQueries({ queryKey: ['fertilizers'] });
+
+      if (item) queryClient.invalidateQueries({ queryKey: ['items'] });
+
+      if (trays) queryClient.invalidateQueries({ queryKey: ['trays'] });
+
+      // update selected customer
+      setCustomer(customer);
+    },
+  });
 
   const headers = [
     'التاريخ',
     'سعر الوحدة',
     'البيــــــــــــــــان',
+    'خصم',
     'المدفوع',
     'الوحدات',
     'الإجمالي',
@@ -45,27 +76,25 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
 
   const headersWithTrashIcon = ['', ...headers];
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        clearError();
-        const res = await sendRequest(`${import.meta.env.VITE_URI}/customer`);
-        setCustomers(res);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchCustomers();
-  }, []);
-
-  const onCustomerClick = async (customerId: string) => {
+  async function fetchCustomers() {
     try {
-      const customer = customers.find(customer => customer._id == customerId);
-      setCustomer(customer);
+      const res = await fetch(`${import.meta.env.VITE_URI}/customer`);
+      return await res.json();
     } catch (err) {
       console.log(err);
     }
-  };
+  }
+
+  function onCustomerClick(customerId: string) {
+    try {
+      if (data) {
+        const customer = data.find(customer => customer._id == customerId);
+        setCustomer(customer);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   const handelDeleteCustomerData = async (customerData: CustomerData) => {
     const itemUrl = `${import.meta.env.VITE_URI}/customer/item/${
@@ -89,25 +118,21 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
       else return moneyUrl;
     };
 
-    try {
-      clearError();
-      await sendRequest(returnUrl(), 'DELETE');
-      navigate('/');
-    } catch (err) {
-      console.log(err);
-    }
+    mutation.mutate(returnUrl());
   };
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchTerm.length > 0) {
-        setSearchResult(filterByName(searchTerm, customers));
-      } else {
-        setSearchResult(customers);
+      if (status == 'success' && data) {
+        if (searchTerm.length > 0) {
+          setSearchResult(filterByName(searchTerm, data));
+        } else {
+          setSearchResult(data);
+        }
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchTerm, customers]);
+  }, [searchTerm, searchResult, data]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -123,7 +148,8 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
 
   return (
     <>
-      {isLoading && <Modal spinner />}
+      {status == 'pending' && <Modal spinner />}
+      {mutation.isPending && <Modal spinner />}
       <Container>
         <PageHeader
           itemName="أسم العميل"
@@ -149,13 +175,13 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
           </div>
         )}
         {error ? (
-          <Error>{error}</Error>
+          <Error>{error.message}</Error>
         ) : (
           <Row>
             {!printMode && (
               <Col sm={2}>
                 <SideBar title="العملاء">
-                  {searchResult &&
+                  {searchResult.length > 0 &&
                     searchResult.map(customer => (
                       <SideBarItem
                         key={customer._id}
@@ -186,6 +212,7 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
                         </TableData>
                         <TableData>{customerData.unitPrice}</TableData>
                         <TableData>{customerData.statement}</TableData>
+                        <TableData>{customerData.discount}</TableData>
                         <TableData>{customerData.paid}</TableData>
                         <TableData>
                           {customerData.trays || customerData.units}

@@ -6,10 +6,10 @@ import { Table, Nav as NavBootstrap, Navbar } from 'react-bootstrap';
 import NewRequest from '../components/DailySales/NewRequest';
 import NewDailySales from '../components/DailySales/NewDailySales';
 import { DailySale } from '../data.types';
-import useHttpClient from '../components/hooks/http-hook';
 import Modal from '../components/shared/Modal';
 import { convertDate, filterByName, monthList, returnUrl } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
+import { useQuery } from '@tanstack/react-query';
 
 interface DailySalesHeaderInterface {
   children?: ReactNode;
@@ -34,29 +34,34 @@ const DailySales: React.FC<DailySalesInterface> = ({
   toggleNav,
   printMode,
 }) => {
+  const {
+    status,
+    data,
+  }: {
+    status: string;
+    data: { dailySales: DailySale[]; organizedDailySales: any } | undefined;
+    error: any;
+  } = useQuery({
+    queryKey: ['dailySales'],
+    queryFn: fetchDailySales,
+  });
+
   const [showNewCustomerModal, setShowNewCustomerModal] = useState(false);
   const [showNewSupplierModal, setShowNewSupplierModal] = useState(false);
   const [showLoanerModal, setShowLoanerModal] = useState(false);
   const [showNewItemModal, setShowNewItemModal] = useState(false);
   const [showNewFertilizerModal, setShowNewFertilizerModal] = useState(false);
   const [showNewDailySalesModal, setShowNewDailySalesModal] = useState(false);
-  const { isLoading, clearError, sendRequest } = useHttpClient();
-  const [dailySales, setDailySales] = useState<{
-    dailySales: DailySale[];
-    organizedDailySales: any;
-  }>();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<DailySale[]>([]);
 
-  const fetchDailySales = async () => {
+  async function fetchDailySales() {
     try {
-      clearError();
-      const res = await sendRequest(`${import.meta.env.VITE_URI}/daily-sales`);
-      setDailySales(res);
+      return (await fetch(`${import.meta.env.VITE_URI}/daily-sales`)).json();
     } catch (err) {
       console.log(err);
     }
-  };
+  }
   useEffect(() => {
     fetchDailySales();
   }, []);
@@ -64,18 +69,19 @@ const DailySales: React.FC<DailySalesInterface> = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchTerm.length > 0) {
-        setSearchResult(filterByName(searchTerm, dailySales?.dailySales));
+        setSearchResult(filterByName(searchTerm, data?.dailySales));
       } else {
-        setSearchResult(dailySales?.dailySales || []);
+        setSearchResult(data?.dailySales || []);
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchTerm, dailySales]);
+  }, [searchTerm, data]);
 
   const sendDeleteRequest = async (url: string) => {
     try {
-      clearError();
-      const newData = await sendRequest(url, 'DELETE');
+      const newData = await fetch(url, {
+        method: 'DELETE',
+      });
       if (newData) setTimeout(fetchDailySales, 500);
     } catch (err) {
       console.log(err);
@@ -112,7 +118,7 @@ const DailySales: React.FC<DailySalesInterface> = ({
 
   return (
     <>
-      {isLoading && <Modal spinner />}
+      {status === 'pending' && <Modal spinner />}
       <Container>
         {!printMode && (
           <>
@@ -231,23 +237,21 @@ const DailySales: React.FC<DailySalesInterface> = ({
       {!printMode && (
         <div className="side-date--bar">
           <div className="years">
-            {dailySales?.organizedDailySales &&
-              Object.keys(dailySales?.organizedDailySales)
+            {data?.organizedDailySales &&
+              Object.keys(data?.organizedDailySales)
                 .reverse()
                 .map(year => (
                   <div className="side-date--year" key={year}>
                     <h3 className="mt-3 fw-bold">{year}</h3>
                     <ul>
-                      {Object.keys(dailySales.organizedDailySales[year])
+                      {Object.keys(data.organizedDailySales[year])
                         .reverse()
                         .map(month => (
                           <li
                             key={month}
                             onClick={() => {
                               setSearchResult(
-                                dailySales.organizedDailySales[year][
-                                  month
-                                ].reverse()
+                                data.organizedDailySales[year][month].reverse()
                               );
                             }}
                           >
@@ -260,8 +264,7 @@ const DailySales: React.FC<DailySalesInterface> = ({
           </div>
           <h4
             onClick={() => {
-              if (dailySales?.dailySales)
-                setSearchResult(dailySales?.dailySales);
+              if (data?.dailySales) setSearchResult(data?.dailySales);
             }}
           >
             الكل
