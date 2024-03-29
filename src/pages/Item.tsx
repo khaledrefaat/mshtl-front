@@ -121,7 +121,10 @@ const Seed = () => {
           </div>
         </div>
         {error || mutation.isError ? (
-          <Error>{error.message || mutation.error.message}</Error>
+          <Error>
+            {(error && error.message) ||
+              (mutation.error && mutation.error.message)}
+          </Error>
         ) : (
           <Row>
             <Col sm={2}>

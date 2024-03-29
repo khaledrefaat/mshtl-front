@@ -30,8 +30,6 @@ const Trays = () => {
     async onSuccess(data) {
       const { trays, traysCount } = await data;
       queryClient.invalidateQueries({ queryKey: ['trays', 'customers'] });
-      console.log(trays);
-      console.log(traysCount);
       setSearchResult(trays);
       setTraysCount(traysCount);
     },
@@ -87,7 +85,10 @@ const Trays = () => {
         />
 
         {error || mutation.isError ? (
-          <Error>{error.message || mutation.error.message}</Error>
+          <Error>
+            {(error && error.message) ||
+              (mutation.error && mutation.error.message)}
+          </Error>
         ) : (
           <>
             <div className="input-group d-flex justify-content-end">
