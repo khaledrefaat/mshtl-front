@@ -256,7 +256,6 @@ const DailySales = () => {
               {searchResult &&
                 searchResult.map(dailySale => (
                   <tr key={dailySale._id}>
-                    <TableData></TableData>
                     <TrashIcon onClick={() => handelDeleteRequest(dailySale)} />
                     <TableData>{dailySale.notes}</TableData>
                     <TableData>
