@@ -21,7 +21,7 @@ import Gas from './pages/Gas';
 import Requirements from './pages/Requirements';
 import useAuth from './components/hooks/auth-hook';
 import { AuthContext } from './components/context/AuthContext';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Fertilizer from './pages/Fertilizer';
 import Loan from './pages/Loan';
 
@@ -31,7 +31,6 @@ const queryClient = new QueryClient();
 
 export default function App() {
   const { token, isAdmin, login, logout } = useAuth();
-  const [printMode, setPrintMode] = useState(false);
 
   useEffect(() => {
     const localItem = localStorage.getItem('userData');
@@ -40,8 +39,6 @@ export default function App() {
       login(userData.isAdmin, userData.token);
     }
   }, []);
-
-  const toggleNav = () => setPrintMode(printMode => !printMode);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -57,14 +54,9 @@ export default function App() {
         >
           {typeof token === 'string' ? (
             <>
-              {!printMode && <Nav />}
+              <Nav />
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <DailySales toggleNav={toggleNav} printMode={printMode} />
-                  }
-                />
+                <Route path="/" element={<DailySales />} />
                 <Route path="/order-seeds" element={<OrderSeedings />} />
                 <Route path="/item" element={<Item />} />
                 <Route path="/trays" element={<Trays />} />
@@ -72,12 +64,7 @@ export default function App() {
                   path="/planting-notebook"
                   element={<PlantingNoteBook />}
                 />
-                <Route
-                  path="/customers"
-                  element={
-                    <Customer toggleNav={toggleNav} printMode={printMode} />
-                  }
-                />
+                <Route path="/customers" element={<Customer />} />
                 <Route path="/suppliers" element={<Supplier />} />
                 <Route path="/fixed-salary" element={<FixedSalary />} />
                 <Route path="/employment" element={<Employment />} />

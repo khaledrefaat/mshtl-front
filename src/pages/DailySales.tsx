@@ -26,16 +26,7 @@ const DailySalesHeader: React.FC<DailySalesHeaderInterface> = ({
     </th>
   );
 };
-
-interface DailySalesInterface {
-  toggleNav: () => void;
-  printMode: boolean;
-}
-
-const DailySales: React.FC<DailySalesInterface> = ({
-  toggleNav,
-  printMode,
-}) => {
+const DailySales = () => {
   const [showNewCustomerModal, setShowNewCustomerModal] = useState(false);
   const [showNewSupplierModal, setShowNewSupplierModal] = useState(false);
   const [showLoanerModal, setShowLoanerModal] = useState(false);
@@ -119,19 +110,6 @@ const DailySales: React.FC<DailySalesInterface> = ({
       console.log(err);
     }
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      document.addEventListener('keydown', e => {
-        if (e.key === 'p') {
-          toggleNav();
-        }
-      });
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   function calculatePageRange(currentPage, totalPages) {
     // Set the total number of pages to display (including the current page).
     const totalPagesToDisplay = 30;
@@ -252,11 +230,7 @@ const DailySales: React.FC<DailySalesInterface> = ({
           <Table bordered hover className="table-table mt-5">
             <thead>
               <tr>
-                {!printMode && (
-                  <>
-                    <DailySalesHeader />
-                  </>
-                )}
+                <DailySalesHeader />
                 <DailySalesHeader>ملاحظات</DailySalesHeader>
                 <DailySalesHeader>التاريخ</DailySalesHeader>
                 <DailySalesHeader>البيان</DailySalesHeader>
@@ -282,15 +256,8 @@ const DailySales: React.FC<DailySalesInterface> = ({
               {searchResult &&
                 searchResult.map(dailySale => (
                   <tr key={dailySale._id}>
-                    {!printMode && dailySale.isConfirmed ? (
-                      <TableData></TableData>
-                    ) : printMode ? (
-                      ''
-                    ) : (
-                      <TrashIcon
-                        onClick={() => handelDeleteRequest(dailySale)}
-                      />
-                    )}
+                    <TableData></TableData>
+                    <TrashIcon onClick={() => handelDeleteRequest(dailySale)} />
                     <TableData>{dailySale.notes}</TableData>
                     <TableData>
                       {dailySale.date && convertDate(dailySale.date)}
