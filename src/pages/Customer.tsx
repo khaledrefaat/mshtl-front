@@ -1,6 +1,6 @@
 /* /index.html 200 */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Container from '../components/shared/Container';
 import PageHeader from '../components/shared/PageHeader';
 import Table from '../components/table/Table';
@@ -8,7 +8,7 @@ import {
   Customer as CustomerType,
   customerData as CustomerData,
 } from '../data.types';
-import { Col, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 import SideBar from '../components/shared/SideBar';
 import Error from '../components/shared/Error';
 import SideBarItem from '../components/shared/SideBarItem';
@@ -18,13 +18,9 @@ import { convertDate, filterByName } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sendRequest } from '../util/api';
+import { useReactToPrint } from 'react-to-print';
 
-interface CustomerInterface {
-  toggleNav: () => void;
-  printMode: boolean;
-}
-
-const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
+const Customer = () => {
   const {
     status,
     data,
@@ -40,6 +36,7 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<CustomerType[]>([]);
 
+  const ref = useRef();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -62,6 +59,7 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
   });
 
   const headers = [
+    '',
     'التاريخ',
     'سعر الوحدة',
     'البيــــــــــــــــان',
@@ -71,8 +69,6 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
     'الإجمالي',
     'الرصيد',
   ];
-
-  const headersWithTrashIcon = ['', ...headers];
 
   function onCustomerClick(customerId: string) {
     try {
@@ -123,17 +119,9 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
     return () => clearTimeout(timer);
   }, [searchTerm, searchResult, data]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      document.addEventListener('keydown', e => {
-        if (e.key === 'p') {
-          toggleNav();
-        }
-      });
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const handelPrint = useReactToPrint({
+    content: () => ref.current,
+  });
 
   return (
     <>
@@ -150,68 +138,66 @@ const Customer: React.FC<CustomerInterface> = ({ toggleNav, printMode }) => {
           fourthTitle="رقم الموبايل"
           fourthValue={customer?.phone}
         />
-        {!printMode && (
-          <div className="input-group d-flex justify-content-start">
-            <div className="form-outline">
-              <input
-                type="search"
-                className="form-control"
-                placeholder="Search"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </div>
+        <div className="input-group d-flex justify-content-start">
+          <div className="form-outline">
+            <input
+              type="search"
+              className="form-control"
+              placeholder="Search"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
           </div>
-        )}
+        </div>
         {error || mutation.isError ? (
           <Error>{error.message || mutation.error.message}</Error>
         ) : (
           <Row>
-            {!printMode && (
-              <Col sm={2}>
-                <SideBar title="العملاء">
-                  {searchResult.length > 0 &&
-                    searchResult.map(customer => (
-                      <SideBarItem
-                        key={customer._id}
-                        id={customer._id}
-                        onClick={onCustomerClick}
-                      >
-                        {customer.name}
-                      </SideBarItem>
-                    ))}
-                </SideBar>
-              </Col>
-            )}
+            <Col sm={2}>
+              <SideBar title="العملاء">
+                {searchResult.length > 0 &&
+                  searchResult.map(customer => (
+                    <SideBarItem
+                      key={customer._id}
+                      id={customer._id}
+                      onClick={onCustomerClick}
+                    >
+                      {customer.name}
+                    </SideBarItem>
+                  ))}
+              </SideBar>
+            </Col>
             <Col>
-              <Table headers={printMode ? headers : headersWithTrashIcon}>
-                {customer &&
-                  customer.data.map(customerData => (
-                    <React.Fragment key={customerData._id}>
-                      <tr>
-                        {!printMode && (
+              <div ref={ref}>
+                <Table headers={headers}>
+                  {customer &&
+                    customer.data.map(customerData => (
+                      <React.Fragment key={customerData._id}>
+                        <tr>
                           <TrashIcon
                             onClick={() =>
                               handelDeleteCustomerData(customerData)
                             }
                           />
-                        )}
-                        <TableData>
-                          {customerData.date && convertDate(customerData.date)}
-                        </TableData>
-                        <TableData>{customerData.unitPrice}</TableData>
-                        <TableData>{customerData.statement}</TableData>
-                        <TableData>{customerData.discount}</TableData>
-                        <TableData>{customerData.paid}</TableData>
-                        <TableData>
-                          {customerData.trays || customerData.units}
-                        </TableData>
-                        <TableData>{customerData.total}</TableData>
-                        <TableData>{customerData.balance}</TableData>
-                      </tr>
-                    </React.Fragment>
-                  ))}
-              </Table>
+                          <TableData>
+                            {customerData.date &&
+                              convertDate(customerData.date)}
+                          </TableData>
+                          <TableData>{customerData.unitPrice}</TableData>
+                          <TableData>{customerData.statement}</TableData>
+                          <TableData>{customerData.discount}</TableData>
+                          <TableData>{customerData.paid}</TableData>
+                          <TableData>
+                            {customerData.trays || customerData.units}
+                          </TableData>
+                          <TableData>{customerData.total}</TableData>
+                          <TableData>{customerData.balance}</TableData>
+                        </tr>
+                      </React.Fragment>
+                    ))}
+                </Table>
+              </div>
+              <Button onClick={handelPrint}>اطبع</Button>
             </Col>
           </Row>
         )}

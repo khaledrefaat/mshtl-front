@@ -1,8 +1,8 @@
 import Container from '../components/shared/Container';
 import PageHeader from '../components/shared/PageHeader';
 import TableData from '../components/table/TableData';
-import { ReactNode, useEffect, useState } from 'react';
-import { Table, Nav as NavBootstrap, Navbar } from 'react-bootstrap';
+import { ReactNode, useEffect, useRef, useState } from 'react';
+import { Table, Nav as NavBootstrap, Navbar, Button } from 'react-bootstrap';
 import NewRequest from '../components/DailySales/NewRequest';
 import NewDailySales from '../components/DailySales/NewDailySales';
 import { DailySale } from '../data.types';
@@ -11,6 +11,7 @@ import Modal from '../components/shared/Modal';
 import { convertDate, returnUrl } from '../util/util';
 import TrashIcon from '../components/shared/TrashIcon';
 import Pagination from 'react-bootstrap/Pagination';
+import { useReactToPrint } from 'react-to-print';
 
 interface DailySalesHeaderInterface {
   children?: ReactNode;
@@ -50,6 +51,8 @@ const DailySales: React.FC<DailySalesInterface> = ({
   const [searchResult, setSearchResult] = useState<DailySale[]>([]);
   const [page, setPage] = useState(1);
   const [maxPages, setMaxPages] = useState(1);
+
+  const ref = useRef();
 
   const fetchDailySales = async page => {
     try {
@@ -180,123 +183,130 @@ const DailySales: React.FC<DailySalesInterface> = ({
     );
   }
 
+  const handelPrint = useReactToPrint({
+    content: () => ref.current,
+  });
+
   return (
     <>
       {isLoading && <Modal spinner />}
       <Container>
-        {!printMode && (
-          <>
-            <PageHeader noItemTitle title="يوميـــــــــــــات مبيعات" />
-            <Navbar className="d-flex justify-content-center">
-              <NavBootstrap>
-                <NavBootstrap.Item
-                  className="nav-link"
-                  onClick={() => setShowLoanerModal(true)}
-                >
-                  أضف مستلف
-                </NavBootstrap.Item>
-                <NavBootstrap.Item
-                  className="nav-link"
-                  onClick={() => setShowNewCustomerModal(true)}
-                >
-                  أضف عميل
-                </NavBootstrap.Item>
-                <NavBootstrap.Item
-                  className="nav-link"
-                  onClick={() => setShowNewSupplierModal(true)}
-                >
-                  أضف مورد
-                </NavBootstrap.Item>
-                <NavBootstrap.Item
-                  className="nav-link"
-                  onClick={() => setShowNewItemModal(true)}
-                >
-                  أضف صنف
-                </NavBootstrap.Item>
-                <NavBootstrap.Item
-                  className="nav-link"
-                  onClick={() => setShowNewFertilizerModal(true)}
-                >
-                  أضف سماد او مبيد
-                </NavBootstrap.Item>
-                <NavBootstrap.Item
-                  onClick={() => setShowNewDailySalesModal(true)}
-                  className="nav-link"
-                >
-                  أضف ألي يوميات المبيعــــــــــات
-                </NavBootstrap.Item>
-              </NavBootstrap>
-            </Navbar>
-          </>
-        )}
-        {!printMode && (
-          <div className="input-group d-flex justify-content-end">
-            <div className="form-outline">
-              <input
-                type="search"
-                className="form-control"
-                placeholder="Search"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </div>
+        <>
+          <PageHeader noItemTitle title="يوميـــــــــــــات مبيعات" />
+          <Navbar className="d-flex justify-content-center">
+            <NavBootstrap>
+              <NavBootstrap.Item
+                className="nav-link"
+                onClick={() => setShowLoanerModal(true)}
+              >
+                أضف مستلف
+              </NavBootstrap.Item>
+              <NavBootstrap.Item
+                className="nav-link"
+                onClick={() => setShowNewCustomerModal(true)}
+              >
+                أضف عميل
+              </NavBootstrap.Item>
+              <NavBootstrap.Item
+                className="nav-link"
+                onClick={() => setShowNewSupplierModal(true)}
+              >
+                أضف مورد
+              </NavBootstrap.Item>
+              <NavBootstrap.Item
+                className="nav-link"
+                onClick={() => setShowNewItemModal(true)}
+              >
+                أضف صنف
+              </NavBootstrap.Item>
+              <NavBootstrap.Item
+                className="nav-link"
+                onClick={() => setShowNewFertilizerModal(true)}
+              >
+                أضف سماد او مبيد
+              </NavBootstrap.Item>
+              <NavBootstrap.Item
+                onClick={() => setShowNewDailySalesModal(true)}
+                className="nav-link"
+              >
+                أضف ألي يوميات المبيعــــــــــات
+              </NavBootstrap.Item>
+            </NavBootstrap>
+          </Navbar>
+        </>
+        <div className="input-group d-flex justify-content-between">
+          <Button onClick={handelPrint} className="daily-sales-button">
+            اطبع
+          </Button>
+          <div className="form-outline">
+            <input
+              type="search"
+              className="form-control"
+              placeholder="Search"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
           </div>
-        )}
-        <Table bordered hover className="table-table mt-5">
-          <thead>
-            <tr>
-              {!printMode && (
-                <>
-                  <DailySalesHeader />
-                </>
-              )}
-              <DailySalesHeader>ملاحظات</DailySalesHeader>
-              <DailySalesHeader>التاريخ</DailySalesHeader>
-              <DailySalesHeader>البيان</DailySalesHeader>
-              <th className="text-center table-header" colSpan={2}>
-                بضــــــــــاعة
-              </th>
-              <DailySalesHeader>
-                الأســـــــــــــــــــــــــــــم
-              </DailySalesHeader>
-              <th className="text-center table-header" colSpan={3}>
-                نقديـــــــــــة
-              </th>
-            </tr>
-            <tr>
-              <th className="text-center table-header">منصرف</th>
-              <th className="text-center table-header">وارد</th>
-              <th className="text-center table-header">منصرف</th>
-              <th className="text-center table-header">وارد</th>
-              <th className="text-center table-header">رصيد</th>
-            </tr>
-          </thead>
-          <tbody>
-            {searchResult &&
-              searchResult.map(dailySale => (
-                <tr key={dailySale._id}>
-                  {!printMode && dailySale.isConfirmed ? (
-                    <TableData></TableData>
-                  ) : printMode ? (
-                    ''
-                  ) : (
-                    <TrashIcon onClick={() => handelDeleteRequest(dailySale)} />
-                  )}
-                  <TableData>{dailySale.notes}</TableData>
-                  <TableData>
-                    {dailySale.date && convertDate(dailySale.date)}
-                  </TableData>
-                  <TableData>{dailySale.statement}</TableData>
-                  <TableData>{dailySale?.goods?.expense}</TableData>
-                  <TableData>{dailySale?.goods?.income}</TableData>
-                  <TableData>{dailySale.name}</TableData>
-                  <TableData>{dailySale?.money?.expense}</TableData>
-                  <TableData>{dailySale?.money?.income}</TableData>
-                  <TableData>{dailySale?.money?.balance}</TableData>
-                </tr>
-              ))}
-          </tbody>
-        </Table>
+        </div>
+        <div ref={ref}>
+          <Table bordered hover className="table-table mt-5">
+            <thead>
+              <tr>
+                {!printMode && (
+                  <>
+                    <DailySalesHeader />
+                  </>
+                )}
+                <DailySalesHeader>ملاحظات</DailySalesHeader>
+                <DailySalesHeader>التاريخ</DailySalesHeader>
+                <DailySalesHeader>البيان</DailySalesHeader>
+                <th className="text-center table-header" colSpan={2}>
+                  بضــــــــــاعة
+                </th>
+                <DailySalesHeader>
+                  الأســـــــــــــــــــــــــــــم
+                </DailySalesHeader>
+                <th className="text-center table-header" colSpan={3}>
+                  نقديـــــــــــة
+                </th>
+              </tr>
+              <tr>
+                <th className="text-center table-header">منصرف</th>
+                <th className="text-center table-header">وارد</th>
+                <th className="text-center table-header">منصرف</th>
+                <th className="text-center table-header">وارد</th>
+                <th className="text-center table-header">رصيد</th>
+              </tr>
+            </thead>
+            <tbody>
+              {searchResult &&
+                searchResult.map(dailySale => (
+                  <tr key={dailySale._id}>
+                    {!printMode && dailySale.isConfirmed ? (
+                      <TableData></TableData>
+                    ) : printMode ? (
+                      ''
+                    ) : (
+                      <TrashIcon
+                        onClick={() => handelDeleteRequest(dailySale)}
+                      />
+                    )}
+                    <TableData>{dailySale.notes}</TableData>
+                    <TableData>
+                      {dailySale.date && convertDate(dailySale.date)}
+                    </TableData>
+                    <TableData>{dailySale.statement}</TableData>
+                    <TableData>{dailySale?.goods?.expense}</TableData>
+                    <TableData>{dailySale?.goods?.income}</TableData>
+                    <TableData>{dailySale.name}</TableData>
+                    <TableData>{dailySale?.money?.expense}</TableData>
+                    <TableData>{dailySale?.money?.income}</TableData>
+                    <TableData>{dailySale?.money?.balance}</TableData>
+                  </tr>
+                ))}
+            </tbody>
+          </Table>
+        </div>
         {!searchTerm && renderPages()}
       </Container>
       {showNewCustomerModal && (

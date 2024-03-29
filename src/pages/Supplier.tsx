@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from 'react';
-import { Col, Row } from 'react-bootstrap';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { Button, Col, Row } from 'react-bootstrap';
 import Container from '../components/shared/Container';
 import Error from '../components/shared/Error';
 import Modal from '../components/shared/Modal';
@@ -15,6 +15,7 @@ import { AuthContext } from '../components/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sendRequest } from '../util/api';
+import { useReactToPrint } from 'react-to-print';
 
 const Supplier = () => {
   const {
@@ -37,6 +38,8 @@ const Supplier = () => {
     navigate('/');
   }
 
+  const ref = useRef();
+
   const headers = [
     '',
     'ملاحظات',
@@ -44,6 +47,7 @@ const Supplier = () => {
     'البيان',
     'سعر الوحدة',
     'الوحدة',
+    'خصم',
     'الإجمالي',
     'المدفوع',
     'الرصيد',
@@ -92,6 +96,10 @@ const Supplier = () => {
     return () => clearTimeout(timer);
   }, [searchTerm, data]);
 
+  const handelPrint = useReactToPrint({
+    content: () => ref.current,
+  });
+
   return (
     <>
       {status == 'pending' && <Modal spinner />}
@@ -133,34 +141,39 @@ const Supplier = () => {
               </SideBar>
             </Col>
             <Col>
-              <Table headers={headers}>
-                {supplier &&
-                  supplier.data.map(
-                    ({
-                      _id,
-                      notes,
-                      date,
-                      statement,
-                      total,
-                      balance,
-                      unitPrice,
-                      unit,
-                      paid,
-                    }) => (
-                      <tr key={_id}>
-                        <TrashIcon onClick={() => handelDeleteRequest(_id)} />
-                        <TableData>{notes}</TableData>
-                        <TableData>{date && convertDate(date)}</TableData>
-                        <TableData>{statement}</TableData>
-                        <TableData>{unitPrice}</TableData>
-                        <TableData>{unit}</TableData>
-                        <TableData>{total}</TableData>
-                        <TableData>{paid}</TableData>
-                        <TableData>{balance}</TableData>
-                      </tr>
-                    )
-                  )}
-              </Table>
+              <div ref={ref}>
+                <Table headers={headers}>
+                  {supplier &&
+                    supplier.data.map(
+                      ({
+                        _id,
+                        notes,
+                        date,
+                        statement,
+                        discount,
+                        total,
+                        balance,
+                        unitPrice,
+                        unit,
+                        paid,
+                      }) => (
+                        <tr key={_id}>
+                          <TrashIcon onClick={() => handelDeleteRequest(_id)} />
+                          <TableData>{notes}</TableData>
+                          <TableData>{date && convertDate(date)}</TableData>
+                          <TableData>{statement}</TableData>
+                          <TableData>{unitPrice}</TableData>
+                          <TableData>{unit}</TableData>
+                          <TableData>{discount}</TableData>
+                          <TableData>{total}</TableData>
+                          <TableData>{paid}</TableData>
+                          <TableData>{balance}</TableData>
+                        </tr>
+                      )
+                    )}
+                </Table>
+              </div>
+              <Button onClick={handelPrint}>اطبع</Button>
             </Col>
           </Row>
         )}

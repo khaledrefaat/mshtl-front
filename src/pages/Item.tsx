@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Col, Row } from 'react-bootstrap';
+import { useEffect, useRef, useState } from 'react';
+import { Button, Col, Row } from 'react-bootstrap';
 import Container from '../components/shared/Container';
 import Error from '../components/shared/Error';
 import Modal from '../components/shared/Modal';
@@ -14,6 +14,7 @@ import { convertDate, filterByName } from '../util/util';
 import NewRequest from '../components/DailySales/NewRequest';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sendRequest } from '../util/api';
+import { useReactToPrint } from 'react-to-print';
 const Seed = () => {
   const { data, status, error } = useQuery({
     queryKey: ['items'],
@@ -24,6 +25,8 @@ const Seed = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResult, setSearchResult] = useState<Item[]>([]);
   const [modal, setModal] = useState(false);
+
+  const ref = useRef();
 
   const headers = [
     '',
@@ -89,6 +92,10 @@ const Seed = () => {
     return () => clearTimeout(timer);
   }, [searchTerm, data]);
 
+  const handelPrint = useReactToPrint({
+    content: () => ref.current,
+  });
+
   return (
     <>
       {status == 'pending' && <Modal spinner />}
@@ -132,30 +139,33 @@ const Seed = () => {
               </SideBar>
             </Col>
             <Col>
-              <Table headers={headers}>
-                {item &&
-                  item.data.map(item => (
-                    <tr key={item._id}>
-                      <TrashIcon onClick={() => handelDeleteItemData(item)} />
-                      <TableData>{item.notes}</TableData>
-                      <TableData>
-                        {item.date && convertDate(item.date)}
-                      </TableData>
-                      <TableData>{item.statement}</TableData>
-                      <TableData>{item.expense}</TableData>
-                      <TableData>{item.income}</TableData>
-                      <TableData>{item.balance}</TableData>
-                    </tr>
-                  ))}
-                {modal && (
-                  <NewRequest
-                    title="سعـــــــــــــــــــــر الـــــــــــــــوحدة"
-                    hideModal={() => setModal(false)}
-                    url={`${import.meta.env.VITE_URI}/item`}
-                    itemId={item?._id}
-                  />
-                )}
-              </Table>
+              <div ref={ref}>
+                <Table headers={headers}>
+                  {item &&
+                    item.data.map(item => (
+                      <tr key={item._id}>
+                        <TrashIcon onClick={() => handelDeleteItemData(item)} />
+                        <TableData>{item.notes}</TableData>
+                        <TableData>
+                          {item.date && convertDate(item.date)}
+                        </TableData>
+                        <TableData>{item.statement}</TableData>
+                        <TableData>{item.expense}</TableData>
+                        <TableData>{item.income}</TableData>
+                        <TableData>{item.balance}</TableData>
+                      </tr>
+                    ))}
+                  {modal && (
+                    <NewRequest
+                      title="سعـــــــــــــــــــــر الـــــــــــــــوحدة"
+                      hideModal={() => setModal(false)}
+                      url={`${import.meta.env.VITE_URI}/item`}
+                      itemId={item?._id}
+                    />
+                  )}
+                </Table>
+              </div>
+              <Button onClick={handelPrint}>إطبع</Button>
             </Col>
           </Row>
         )}

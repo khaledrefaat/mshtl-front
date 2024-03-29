@@ -23,6 +23,7 @@ const NewSupplierData: React.FC<NewSupplierDataInterface> = ({ hideModal }) => {
 
   const [unit, setUnit] = useState('');
   const [paid, setPaid] = useState('');
+  const [discount, setDiscount] = useState('');
   const [unitPrice, setUnitPrice] = useState('');
   const [statement, setStatement] = useState('');
   const [notes, setNotes] = useState('');
@@ -30,6 +31,7 @@ const NewSupplierData: React.FC<NewSupplierDataInterface> = ({ hideModal }) => {
 
   const onUnitChange = (unit: string) => setUnit(unit);
   const onPaidChange = (paid: string) => setPaid(paid);
+  const onDiscountChange = (discount: string) => setDiscount(discount);
   const onUnitPriceChange = (unitPrice: string) => setUnitPrice(unitPrice);
   const onStatementChange = (statement: string) => setStatement(statement);
   const onNotesChange = (notes: string) => setNotes(notes);
@@ -94,6 +96,19 @@ const NewSupplierData: React.FC<NewSupplierDataInterface> = ({ hideModal }) => {
             'Content-Type': 'application/json',
           }
         );
+      } else if (switchButton === 'discount') {
+        res = await sendRequest(
+          `${import.meta.env.VITE_URI}/supplier/${supplierId}`,
+          'POST',
+          JSON.stringify({
+            discount,
+            statement,
+            notes,
+          }),
+          {
+            'Content-Type': 'application/json',
+          }
+        );
       }
 
       if (res) hideModal();
@@ -118,6 +133,12 @@ const NewSupplierData: React.FC<NewSupplierDataInterface> = ({ hideModal }) => {
       {supplierId && (
         <>
           <SwitchButtonContainer>
+            <SwitchButton
+              onClick={() => setSwitchButton('discount')}
+              active={switchButton === 'discount'}
+            >
+              خصم
+            </SwitchButton>
             <SwitchButton
               onClick={() => setSwitchButton('moneyTransaction')}
               active={switchButton === 'moneyTransaction'}
@@ -155,21 +176,6 @@ const NewSupplierData: React.FC<NewSupplierDataInterface> = ({ hideModal }) => {
                 value={unit}
                 sideLabel
               />
-              <CustomFormGroup
-                label=": البيان"
-                type="text"
-                onChange={onStatementChange}
-                value={statement}
-                sideLabel
-                required
-              />
-              <CustomFormGroup
-                label=": ملاحظات"
-                type="text"
-                onChange={onNotesChange}
-                value={notes}
-                sideLabel
-              />
             </>
           )}
           {switchButton === 'fertilizer' && (
@@ -200,24 +206,33 @@ const NewSupplierData: React.FC<NewSupplierDataInterface> = ({ hideModal }) => {
                 value={unit}
                 sideLabel
               />
-              <CustomFormGroup
-                label=": البيان"
-                type="text"
-                onChange={onStatementChange}
-                value={statement}
-                sideLabel
-                required
-              />
-              <CustomFormGroup
-                label=": ملاحظات"
-                type="text"
-                onChange={onNotesChange}
-                value={notes}
-                sideLabel
-              />
             </>
           )}
-
+          {switchButton === 'discount' && (
+            <CustomFormGroup
+              label=": خصم"
+              type="number"
+              onChange={onDiscountChange}
+              value={discount}
+              sideLabel
+              required
+            />
+          )}
+          <CustomFormGroup
+            label=": البيان"
+            type="text"
+            onChange={onStatementChange}
+            value={statement}
+            sideLabel
+            required
+          />
+          <CustomFormGroup
+            label=": ملاحظات"
+            type="text"
+            onChange={onNotesChange}
+            value={notes}
+            sideLabel
+          />
           <CustomButton
             type="submit"
             onClick={onFormSubmit}

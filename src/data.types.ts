@@ -90,6 +90,7 @@ interface supplierData {
   _id: string;
   balance: number;
   total: number;
+  discount?: number;
   statement?: string;
   date?: string;
   notes?: string;
